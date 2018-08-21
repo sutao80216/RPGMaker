@@ -1,10 +1,11 @@
 //=============================================================================
 // バトルイベントを拡張するプラグイン
 // FTKR_ExBattleEvent.js
+// プラグインNo : 40
 // 作成者     : フトコロ
 // 作成日     : 2017/05/25
-// 最終更新日 : 2017/06/30
-// バージョン : v1.3.0
+// 最終更新日 : 2018/02/19
+// バージョン : v1.3.3
 //=============================================================================
 
 var Imported = Imported || {};
@@ -14,7 +15,7 @@ var FTKR = FTKR || {};
 FTKR.EBE = FTKR.EBE || {};
 
 /*:
- * @plugindesc v1.3.0 バトルイベントを拡張するプラグイン
+ * @plugindesc v1.3.3 バトルイベントを拡張するプラグイン
  * @author フトコロ
  * 
  * @param Battle Event
@@ -143,19 +144,23 @@ FTKR.EBE = FTKR.EBE || {};
  * 
  * ６．勝利メッセージの表示
  * データベースの[用語]-[メッセージ]で設定した勝利メッセージを表示します。
+ * 半角スペースを空けて"-s"を付けると、メッセージを閉じるまでイベント処理を
+ * 止めます。
  * 
  * プラグインコマンド
- * 　EBE_勝利メッセージ表示
- * 　EBE_DISPLAY_VICTORY_MESSAGE
+ * 　EBE_勝利メッセージ表示 (-s)
+ * 　EBE_DISPLAY_VICTORY_MESSAGE (-s)
  * 
  * 
  * ７．戦闘報酬の表示
  * 戦闘報酬の計算結果に合わせて、データベースの[用語]-[メッセージ]で設定した
  * メッセージを表示します。
+ * 半角スペースを空けて"-s"を付けると、メッセージを閉じるまでイベント処理を
+ * 止めます。
  * 
  * プラグインコマンド
- * 　EBE_戦闘報酬表示
- * 　EBE_DISPLAY_REWARDS
+ * 　EBE_戦闘報酬表示 (-s)
+ * 　EBE_DISPLAY_REWARDS (-s)
  * 
  * 　
  * ８．戦闘報酬の入手
@@ -193,10 +198,12 @@ FTKR.EBE = FTKR.EBE || {};
  * 
  * １．敗北メッセージの表示
  * データベースの[用語]-[メッセージ]で設定した敗北メッセージを表示します。
+ * 半角スペースを空けて"-s"を付けると、メッセージを閉じるまでイベント処理を
+ * 止めます。
  * 
  * プラグインコマンド
- * 　EBE_敗北メッセージ表示
- * 　EBE_DISPLAY_DEFEAT_MESSAGE
+ * 　EBE_敗北メッセージ表示 (-s)
+ * 　EBE_DISPLAY_DEFEAT_MESSAGE (-s)
  * 
  * 
  * ２．敗北MEの演奏
@@ -423,21 +430,34 @@ FTKR.EBE = FTKR.EBE || {};
  * 　BattleManager.isActedEnemy(メンバーID)
  * 
  * 
- * 
- * 
  *-----------------------------------------------------------------------------
  * 本プラグインのライセンスについて(License)
  *-----------------------------------------------------------------------------
  * 本プラグインはMITライセンスのもとで公開しています。
  * This plugin is released under the MIT License.
  * 
- * Copyright (c) 2017 Futokoro
+ * Copyright (c) 2017,2018 Futokoro
  * http://opensource.org/licenses/mit-license.php
+ * 
+ * 
+ * プラグイン公開元
+ * https://github.com/futokoro/RPGMaker/blob/master/README.md
  * 
  * 
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
+ * 
+ * v1.3.3 - 2018/02/19 : 不具合修正
+ *    1. Custom Victory Eventが0の時に、戦闘勝利イベントを実行すると
+ *       戦闘勝利回数が2回増加してしまう不具合を修正。
+ * 
+ * v1.3.2 - 2018/01/13 : 機能追加
+ *    1. メッセージ表示関係のプラグインコマンドに、イベント処理を止める機能を追加。
+ * 
+ * v1.3.1 - 2018/01/12 : 不具合修正
+ *    1. 戦闘終了時イベント中にウェイトコマンドを実行すると、アクターの
+ *       モーションが正常に再生されない不具合を修正。
  * 
  * v1.3.0 - 2017/06/30 : 機能追加
  *    1. 戦闘終了時のイベントの後に、MVデフォルトの戦闘終了処理を実行する
@@ -552,14 +572,14 @@ FTKR.evalFormula = function(formula) {
 //=============================================================================
 // プラグイン パラメータ
 //=============================================================================
-FTKR.EBE.parameters = PluginManager.parameters('FTKR_ExBattleEvent');
+var parameters = PluginManager.parameters('FTKR_ExBattleEvent');
 
-FTKR.EBE.battleEvents = splitConvertNumber(FTKR.EBE.parameters['Battle Event']);
+FTKR.EBE.battleEvents = splitConvertNumber(parameters['Battle Event']);
 FTKR.EBE.battleEnd = {
-    customV : Number(FTKR.EBE.parameters['Custom Victory Event'] || 0),
-    customD : Number(FTKR.EBE.parameters['Custom Defeat Event'] || 0),
-    victory : Number(FTKR.EBE.parameters['Victory Event'] || 0),
-    defeat : Number(FTKR.EBE.parameters['Defeat Event'] || 0),
+    customV : Number(parameters['Custom Victory Event'] || 0),
+    customD : Number(parameters['Custom Defeat Event'] || 0),
+    victory : Number(parameters['Victory Event'] || 0),
+    defeat  : Number(parameters['Defeat Event'] || 0),
 };
 
 //=============================================================================
@@ -622,14 +642,17 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
         case '勝利メッセージ表示':
         case 'DISPLAY_VICTORY_MESSAGE':
             BattleManager.displayVictoryMessage();
+            if (args[0] === '-s')this.setWaitMode('message');
             break;
         case '敗北メッセージ表示':
         case 'DISPLAY_DEFEAT_MESSAGE':
             BattleManager.displayDefeatMessage();
+            if (args[0] === '-s')this.setWaitMode('message');
             break;
         case '戦闘報酬表示':
         case 'DISPLAY_REWARDS':
             BattleManager.displayRewards();
+            if (args[0] === '-s')this.setWaitMode('message');
             break;
         case '戦闘報酬入手':
         case 'GAIN_REWARDS':
@@ -637,6 +660,7 @@ Game_Interpreter.prototype.pluginCommand = function(command, args) {
             break;
         case '戦闘再開':
         case 'RESTART_BATTLE':
+            BattleManager._isBattleEndEvent = false;
             BattleManager._checkEbeBattleEvent = false;
             break;
         case '数字ポップアップ':
@@ -722,6 +746,18 @@ BattleManager.initMembers = function() {
     this._checkEbeBattleEvent = false;
     this._battleEndPattern = 0;
     this._numberSprite = [];
+    this._isBattleEndEvent = false;
+};
+
+var _EBE_Game_Party_requestMotionRefresh = Game_Party.prototype.requestMotionRefresh;
+Game_Party.prototype.requestMotionRefresh = function() {
+    if (!BattleManager.isBattleEndEvent()) {
+        _EBE_Game_Party_requestMotionRefresh.call(this);
+    }
+};
+
+BattleManager.isBattleEndEvent = function() {
+    return $gameParty.inBattle() && this._isBattleEndEvent;
 };
 
 FTKR.EBE.BattleManager_checkBattleEnd = BattleManager.checkBattleEnd;
@@ -732,11 +768,11 @@ BattleManager.checkBattleEnd = function() {
                 case 0:
                     if (FTKR.EBE.battleEnd.customV) break;
                     FTKR.EBE.BattleManager_processVictory.call(this);
-                    break;
+                    return true;
                 case 2:
                     if (FTKR.EBE.battleEnd.customD) break;
                     FTKR.EBE.BattleManager_processDefeat.call(this);
-                    break;
+                    return true;
             }
             this.endBattle(this._battleEndPattern);
             return true;
@@ -764,7 +800,7 @@ BattleManager.processDefeat = function() {
             this._checkEbeBattleEvent = true;
             this._battleEndPattern = 2;
         }
-       return true;
+        return true;
     }
     FTKR.EBE.BattleManager_processDefeat.call(this);
 };
@@ -867,6 +903,7 @@ Game_Troop.prototype.setupEbeBattleEvent = function(condition, metacodes) {
             }
         }
         var event = $dataCommonEvents[FTKR.EBE.battleEnd[condition]];
+        BattleManager._isBattleEndEvent = true;
         this._interpreter.setup(event.list, this.troop().id);
         return true;
     }

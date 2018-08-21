@@ -1,10 +1,11 @@
 //=============================================================================
 // アイテムボックスのカテゴリーを追加変更するプラグイン
 // FTKR_ItemBoxCategory.js
+// プラグインNo : 50
 // 作成者     : フトコロ
 // 作成日     : 2017/07/01
-// 最終更新日 : 
-// バージョン : v1.0.0
+// 最終更新日 : 2017/12/10
+// バージョン : v1.1.0
 //=============================================================================
 
 var Imported = Imported || {};
@@ -14,13 +15,18 @@ var FTKR = FTKR || {};
 FTKR.IBCt = FTKR.IBCt || {};
 
 /*:
- * @plugindesc v1.0.0 アイテムボックスのカテゴリーを追加変更する
+ * @plugindesc v1.1.0 アイテムボックスのカテゴリーを追加変更する
  * @author フトコロ
  *
  * @param Items Category
  * @desc アイテムボックスで表示するカテゴリー
  * カンマ(,)で分けること
  * @default item, weapon, armor, keyItem
+ * 
+ * @param Category Item Name
+ * @desc カテゴリー'item'の表示名
+ * メニュー画面の表示と変えたい場合に設定する
+ * @default 
  * 
  * @param Category All Name
  * @desc カテゴリー'all'の表示名
@@ -32,6 +38,9 @@ FTKR.IBCt = FTKR.IBCt || {};
  *-----------------------------------------------------------------------------
  * 本プラグインを実装することで、アイテムボックスのカテゴリーを変更します。
  * 
+ * 
+ * オンラインマニュアル
+ * https://github.com/futokoro/RPGMaker/blob/master/FTKR_ItemBoxCategory.ja.md
  * 
  *-----------------------------------------------------------------------------
  * 設定方法
@@ -83,9 +92,17 @@ FTKR.IBCt = FTKR.IBCt || {};
  * http://opensource.org/licenses/mit-license.php
  * 
  * 
+ * プラグイン公開元
+ * https://github.com/futokoro/RPGMaker/blob/master/README.md
+ * 
+ * 
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
+ * 
+ * v1.1.0 - 2017/12/10 : 機能追加
+ *    1. アイテム画面で表示する「アイテム」の表示名を、メニュー画面と別に
+ *       設定する機能を追加
  * 
  * v1.0.0 - 2017/07/01 : 初版作成
  * 
@@ -104,6 +121,7 @@ FTKR.IBCt = FTKR.IBCt || {};
         list    :String(parameters['Items Category'] || ''),
         category:{
             all :String(parameters['Category All Name'] || 'すべて'),
+            item:String(parameters['Category Item Name'] || ''),
         },
     };
 
@@ -170,7 +188,7 @@ FTKR.IBCt = FTKR.IBCt || {};
     Window_ItemCategory.prototype.makeCommandList = function() {
         var lists = FTKR.IBCt.list.replace(/\s/g,'').split(',');
         for (var i = 0; i < lists.length; i++) {
-            var command = TextManager[lists[i]] || FTKR.IBCt.category[lists[i]] || lists[i];
+            var command = FTKR.IBCt.category[lists[i]] || TextManager[lists[i]] || lists[i];
             this.addCommand(command, lists[i]);
         }
     };

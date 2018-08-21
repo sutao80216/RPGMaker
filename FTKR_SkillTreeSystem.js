@@ -1,10 +1,11 @@
 //=============================================================================
 // ツリー型スキル習得システム(Tree-type Skill Learning System)
 // FTKR_SkillTreeSystem.js
-// 作成者     : フトコロ(futokoro)
-// 作成日     : 2017/02/25
-// 最終更新日 : 2017/11/04
-// バージョン : v1.11.4
+// プラグインNo : 7
+// 作成者　　   : フトコロ(futokoro)
+// 作成日　　   : 2017/02/25
+// 最終更新日   : 2018/08/16
+// バージョン   : v1.15.12
 //=============================================================================
 
 var Imported = Imported || {};
@@ -15,7 +16,7 @@ FTKR.STS = FTKR.STS || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.11.4 ツリー型スキル習得システム
+ * @plugindesc v1.15.11 ツリー型スキル習得システム
  * @author フトコロ
  *
  * @param --必須設定(Required)--
@@ -114,6 +115,13 @@ FTKR.STS = FTKR.STS || {};
  * @desc 戦闘終了時のSP入手メッセージ
  * %1 - 獲得SP量, %2 - スキルポイント名
  * @default %1 の%2を獲得！
+ * 
+ * @param Enable Class Sp
+ * @desc アクター１人に対して職業毎に個別のSPを持たせるか
+ * @type Boolean
+ * @on 有効
+ * @off 無効
+ * @default false
  * 
  * @param --スキル枠の設定(Skill Frame)--
  * 
@@ -474,6 +482,9 @@ FTKR.STS = FTKR.STS || {};
  * https://github.com/futokoro/RPGMaker/blob/master/FTKR_SkillTreeSystem.ja.md
  * 
  * 
+ * このプラグインは、コアスクリプトv1.5.0以降専用です。
+ * 
+ * 
  *-----------------------------------------------------------------------------
  * 設定方法/PluginManager Setting
  *-----------------------------------------------------------------------------
@@ -496,6 +507,13 @@ FTKR.STS = FTKR.STS || {};
  * 
  *    If you want to change the Skill Frame Type and more,
  *    FTKR_DisplayCommandFrame.js is required.
+ * 
+ * 
+ * 4. 以下のプラグインと組み合わせて使用する場合には、
+ *    プラグイン管理画面上の順番を守ってください。
+ * 
+ *    FTKR_SkillExpansion.js
+ *    FTKR_SkillTreeSystem.js(このプラグイン/This)
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -628,6 +646,12 @@ FTKR.STS = FTKR.STS || {};
  * ⇒この場合、スキルCを習得するために、スキルAとスキルBをどちらも
  *   習得しなければいけない
  * 
+ * forget_skills: y1,y2,...
+ * 削除スキル: y1,y2,...
+ *    :このスキルを習得した時に、習得済みのスキルID y1,y2,...を削除します。
+ *    :なお、この設定で削除されたスキルは、スキルツリー上では
+ *    :習得済みのままです。
+ * 
  * position: y(, z)
  * 表示位置: y(, z)
  *    :スキルの表示位置を y 行目 に設定します。
@@ -716,7 +740,8 @@ FTKR.STS = FTKR.STS || {};
  * Init Sp: x
  * 初期 SP: x
  *    :アクターの初期SPを x に設定します。
- * 
+ *    :<Enable Class Sp>が有効の場合は、クラスのメモ欄に設定した初期値が
+ *    :その職業の初期SPになります。
  * 
  * 以下のプラグインコマンドで、スキルツリーの追加・削除ができます。
  * 
@@ -736,6 +761,14 @@ FTKR.STS = FTKR.STS || {};
  * スキルを習得するためのコストとして、本プラグイン専用に、スキルポイント
  * というパラメータを用意しています。
  * 
+ * スキルポイントは、アクター毎に個別に持つパラメータですが
+ * 以下のプラグインパラメータの設定により、職業毎にも個別に持たせることができます。
+ * 
+ * <Enable Class Sp>
+ *    :有効にすると、職業毎にSPの増減計算を行います。
+ *    :無効の場合は、すべての職業で共通のSPを使用します。
+ * 
+ * 
  * スキルポイントは、レベルアップ時に入手できます。
  * 以下のプラグインパラメータで入手量を設定できます。
  * 
@@ -754,6 +787,7 @@ FTKR.STS = FTKR.STS || {};
  * スキルポイントの取得
  *-----------------------------------------------------------------------------
  * 以下のプラグインコマンド(Plugin Command)で、SPを取得できます。
+ * なお、<Enable Class Sp>が有効の場合は、現在職業のSPのみ増加します。
  * 
  * <STS Add Sp(x) Actor(y)>
  * <STS 加算 Sp(x) アクター(y)>
@@ -921,10 +955,15 @@ FTKR.STS = FTKR.STS || {};
  * スキルの取得回数は、各ステータスのeval式に使用できます。
  * 
  * eval式に対して、以下のコードを使用できます。
- *  a.stsCount(x) - スキルID x の習得回数を参照します。
+ *  a.stsCount(x)   - スキルID x の習得回数を参照します。
+ *  this.stsCount() - そのスキルの習得回数を参照します。(ダメージ計算式のみ)(*1)
+ * 
  * 
  * この機能により、習得回数によってダメージIDや使用効果を有効にすることや、
  * ステータスの値自体を変える、といった使い方ができます。
+ * 
+ * (*1)このコードは、FTKR_ItemBasic_Damage.jsを組み合わせている場合は
+ * 使用できません。
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -1028,6 +1067,15 @@ FTKR.STS = FTKR.STS || {};
  *    :説明文に制御文字が使えなくなる代わりに、ウィンドウの枠内に
  *    :自動で納まるように調整する機能です。
  *    :0 - 無効、1 - 有効
+ * 
+ * 
+ * 以下のタグをスキルのメモ欄に追記することで、スキル使用時の説明文とは
+ * 別の文章を表示させることが出来ます。制御文字が使用できます。
+ * 
+ * <STS DESC>
+ * 文章
+ * 文章
+ * </STS DESC>
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -1174,6 +1222,7 @@ FTKR.STS = FTKR.STS || {};
  *-----------------------------------------------------------------------------
  * 本プラグインを実装することで、以下の制御文字を追加します。
  * 
+ * １．表示幅の調整
  * \LW[表示幅(,文章,表示位置)]
  * 
  * 表示幅
@@ -1203,6 +1252,23 @@ FTKR.STS = FTKR.STS || {};
  * 主に、本プラグインの制御文字が使用できるプラグインパラメータで、
  * 表示幅を規定したい場合に使用できます。
  *  例) スキル名やコスト名の表示など
+ * 
+ * 
+ * ２．スキルデータの表示
+ * \SDATA[スキルID,パラメータ名]
+ * 
+ * スキルID
+ *    :表示させたいスキルのIDを入力します。
+ * 
+ * パラメータ名
+ *    :表示させたいパラメータに合わせて、以下の文字列を入力します。
+ *    : name    - スキル名を表示
+ *    : mpCost  - 消費MPを表示
+ *    : tpCost  - 消費TPを表示
+ * 
+ * 入力例)
+ * \SDATA[10,mpCost]
+ * ⇒スキルID10の消費MPの値を表示する。
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -1326,13 +1392,71 @@ FTKR.STS = FTKR.STS || {};
  * 本プラグインはMITライセンスのもとで公開しています。
  * This plugin is released under the MIT License.
  * 
- * Copyright (c) 2017 Futokoro
+ * Copyright (c) 2017,2018 Futokoro
  * http://opensource.org/licenses/mit-license.php
+ * 
+ * 
+ * プラグイン公開元
+ * https://github.com/futokoro/RPGMaker/blob/master/README.md
  * 
  * 
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
+ * 
+ * v1.15.12 - 2018/08/16 : 不具合修正
+ *    1. プラグイン適用前のセーブデータを使用した時に画面表示時に
+ *       エラーになる不具合を修正。
+ * 
+ * v1.15.11 - 2018/08/03 : 不具合修正
+ *    1. 習得したスキルを忘れさせ再度習得した場合に、ツリーをリセットしても
+ *       使用したコストが正しく戻らない不具合を修正。
+ * 
+ * v1.15.10 - 2018/07/16 : 処理見直し
+ *    1. SPの計算処理を見直し。
+ *    2. ヘルプの設定方法にTKR_SkillExpansion.jsを追加。
+ * 
+ * v1.15.9 - 2018/05/04 : 機能追加
+ *    1. 習得回数を取得するスクリプトを追加。(しぐれんさん案)
+ * 
+ * v1.15.8 - 2018/05/03 : 不具合修正
+ *    1. プラグインコマンドが認識しない不具合を修正。
+ * 
+ * v1.15.7 - 2018/04/30 : 不具合修正
+ *    1. メニュー画面に戻る時のフリーズバグの暫定対処見直し。
+ * 
+ * v1.15.6 - 2018/04/29 : 不具合修正
+ *    1. メニュー画面に戻る時のフリーズバグの暫定対処を追加。
+ * 
+ * v1.15.5 - 2018/04/23 : 仕様変更
+ *    1. 他プラグインとの競合回避のため、Scene_STSクラスの継承元を
+ *       Scene_MenuBaseに変更
+ * 
+ * v1.15.4 - 2018/04/18 : 不具合修正
+ *    1. スキルの表示条件が反映されない不具合を修正。
+ * 
+ * v1.15.3 - 2018/04/16 : 仕様変更
+ *    1. 他プラグインとの競合回避のため、関数名を変更。
+ * 
+ * v1.15.2 - 2018/04/03 : エラー判定処理追加、ヘルプに注釈追加
+ * 
+ * v1.15.1 - 2018/03/25 : 不具合修正
+ *    1. FTKR_ExItemConfig_ItemBasic.js未適用時にエラーになる不具合を修正。
+ * 
+ * v1.15.0 - 2018/03/09 : 機能追加
+ *    1. FTKR_ExItemConfig_ItemBasic.jsに対応。
+ * 
+ * v1.14.0 - 2018/02/22 : 機能追加、不具合修正
+ *    1. 職業毎に個別のSPをもてる機能を追加。
+ *    2. スキル習得時に他のスキルを忘れさせた場合、ツリーをリセットしても
+ *       使用したコストが戻らない不具合を修正。
+ * 
+ * v1.13.0 - 2018/02/13 : 機能追加
+ *    1. スキルを習得した時に、他のスキルを忘れさせる機能を追加。
+ * 
+ * v1.12.0 - 2017/12/20 : 機能追加
+ *    1. スキルのデータを表示する制御文字を追加。
+ *    2. スキル習得画面の説明文を、スキル使用時の説明文と変える機能を追加。
  * 
  * v1.11.4 - 2017/11/04 : 不具合修正
  *    1. プラグイン適用前のセーブデータを使用した時に
@@ -1356,7 +1480,7 @@ FTKR.STS = FTKR.STS || {};
  *    1. スキルツリーの起点スキルに対して行を指定して登録する機能を追加。
  * 
  * v1.9.0 - 2017/07/25 : 機能追加
- *    1. コアスクリプトv1.5.0以前にも仮対応。
+ *    1. コアスクリプトv1.5.0以前にも仮対応。⇒v1.15.2で削除
  *    2. プラグインパラメータに@type適用
  *    3. 一部記述見直し
  * 
@@ -1561,22 +1685,24 @@ function Scene_STS() {
     //=============================================================================
     var parameters = PluginManager.parameters('FTKR_SkillTreeSystem');
 
-    //必須設定
-    FTKR.STS.skillTreeId = Number(parameters['Skill Tree Id'] || 0);
+    FTKR.STS = {
+        //必須設定
+        skillTreeId       : Number(parameters['Skill Tree Id'] || 0),
 
-    //基本設定
-    FTKR.STS.showCommand = Number(parameters['Show Skill Command'] || 0);
-    FTKR.STS.commandName = String(parameters['Command Name'] || 'スキル習得');
-    FTKR.STS.menuSwitchId = Number(parameters['Skill Menu Switch ID'] || 0);
-    FTKR.STS.enableConf = Number(parameters['Enable Confirmation'] || 0);
-    FTKR.STS.learnedActorVarID = Number(parameters['Learned Actor Var ID'] || 0);
-    FTKR.STS.learnedSkillVarID = Number(parameters['Learned Skill Var ID'] || 0);
-    FTKR.STS.resetWhenForgottenSkill = Number(parameters['Reset When Forgotten Skill'] || 0);
+        //基本設定
+        showCommand       : Number(parameters['Show Skill Command'] || 0),
+        commandName       : String(parameters['Command Name'] || 'スキル習得'),
+        menuSwitchId      : Number(parameters['Skill Menu Switch ID'] || 0),
+        enableConf        : Number(parameters['Enable Confirmation'] || 0),
+        learnedActorVarID : Number(parameters['Learned Actor Var ID'] || 0),
+        learnedSkillVarID : Number(parameters['Learned Skill Var ID'] || 0),
+        resetWhenForgottenSkill : Number(parameters['Reset When Forgotten Skill'] || 0),
 
-    //習得回数の設定
-    FTKR.STS.enableSkillCount = Number(parameters['Enabled Skill Count'] || 0);
-    FTKR.STS.defaultMaxCount = Number(parameters['Default Max Count'] || 0);
-    FTKR.STS.skillLearnedIcon = Number(parameters['Skill Learned Icon'] || 0);
+        //習得回数の設定
+        enableSkillCount  : Number(parameters['Enabled Skill Count'] || 0),
+        defaultMaxCount   : Number(parameters['Default Max Count'] || 0),
+        skillLearnedIcon  : Number(parameters['Skill Learned Icon'] || 0)
+    };
 
     //スキルポイント関係
     FTKR.STS.sp = {
@@ -1586,6 +1712,7 @@ function Scene_STS() {
         icon:Number(parameters['Cost Sp Icon'] || 0),
         hideCost0:Number(parameters['Hide Sp Cost 0'] || 0),
         format:String(parameters['Display Get Sp'] || ''),
+        enableClassSp:(JSON.parse(parameters['Enable Class Sp']) || false),
     };
 
     //スキル枠
@@ -1697,10 +1824,37 @@ function Scene_STS() {
     Game_Action.EFFECT_RESET_TREE = 998;
     Game_Action.EFFECT_CLEAR_TREE = 997;
 
-    var isMVver_1_4 = function() {
-        return !Window_Base.prototype.reserveFaceImages;
-    };
 
+    if (!Window_Base.prototype.reserveFaceImages) {
+        console.error('プロジェクトのコアスクリプトを最新版(v1.5.0以降)にアップデートしてください。');
+        console.error('Update core scripts of your project to the latest version (v1.5.0 or later).');
+        return;
+    }
+
+    var current = (function() {
+        if (document.currentScript) {
+            return document.currentScript.src;
+        } else {
+            var scripts = document.getElementsByTagName('script'),
+            script = scripts[scripts.length-1];
+            if (script.src) {
+                return script.src;
+            }
+        }
+    })();
+    var filename = current ? current.substring(current.lastIndexOf('/')+1, current.length) : '';
+    if (filename !== 'FTKR_SkillTreeSystem.js') {
+        console.error('スキルツリープラグインのファイル名が間違っています。「FTKR_SkillTreeSystem.js」に直してください。');
+        console.error('The file name of SkillTree-plugin is incorrect. Change to "FTKR_SkillTreeSystem.js".');
+        return;
+    }
+
+    if (!FTKR.STS.skillTreeId) {
+        console.error('プラグインパラメータ<Skill Tree Id>を設定してください。');
+        console.error('Set the plugin parameter <Skill Tree Id>.');
+        return;
+    }
+    
     //objのメモ欄から <metacode: x> の値を読み取って返す
     var readObjectMeta = function(obj, metacodes) {
         if (!obj) return false;
@@ -1711,6 +1865,14 @@ function Scene_STS() {
             return match;
         }); 
         return match ? match[1] : '';
+    };
+
+    //引数の要素の中の重複部分を削除する。
+    var duplicateDelete = function(list) {
+        var newlist = list.filter( function(x, i, self) {
+            return self.indexOf(x) === i;
+        });
+        return newlist;
     };
 
     //=============================================================================
@@ -1736,7 +1898,7 @@ function Scene_STS() {
     }
 
     if (!FTKR.evalFormula) {
-    FTKR.evalFormula = function(formula) {
+    FTKR.evalFormula = function(formula, classObj) {
         var datas = FTKR.gameData;
         try {
             var s = $gameSwitches._data;
@@ -1755,14 +1917,6 @@ function Scene_STS() {
         }
     };
     }
-
-    //引数の要素の中の重複部分を削除する。
-    FTKR.duplicateDelete = function(list) {
-        var newlist = list.filter( function(x, i, self) {
-            return self.indexOf(x) === i;
-        });
-        return newlist;
-    };
 
     //=============================================================================
     // Bitmap
@@ -1862,17 +2016,17 @@ function Scene_STS() {
     // DataManager
     //=============================================================================
 
-    FTKR.STS.DatabaseLoaded = false;
+    var _STS_DatabaseLoaded = false;
     var _STS_DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
     DataManager.isDatabaseLoaded = function() {
         if (!_STS_DataManager_isDatabaseLoaded.call(this)) return false;
-        if (!FTKR.STS.DatabaseLoaded) {
+        if (!_STS_DatabaseLoaded) {
             this.stsTreeListNotetags($dataActors);
             this.stsTreeListNotetags($dataClasses);
             this.stsItemGetSpNotetags($dataItems);
             this.stsTreeDataNotetags($dataWeapons);
             this.stsTreeDataNotetags($dataSkills);
-            FTKR.STS.DatabaseLoaded = true;
+            _STS_DatabaseLoaded = true;
         }
         return true;
     };
@@ -1966,6 +2120,8 @@ function Scene_STS() {
     DataManager.stsTreeDataNotetags = function(group) {
         var note1a = /<(?:SET STS DATA)>/i;
         var note1b = /<\/(?:SET STS DATA)>/i;
+        var note2a = /<(?:STS DESC)>/i;
+        var note2b = /<\/(?:STS DESC)>/i;
 
         for (var n = 1; n < group.length; n++) {
             var obj = group[n];
@@ -1985,6 +2141,8 @@ function Scene_STS() {
                 show:'',
                 position:0,
                 diffX:0,
+                desc:'',
+                forgetSkillIds:[],
             };
             obj.sts.costs.push(this.setCost('sp', 0, FTKR.STS.sp.defaultReq));
 
@@ -1996,8 +2154,16 @@ function Scene_STS() {
                 } else if (note1b.test(line)) {
                     setMode = 'none';
                     obj.sts.data = text;
+                } else if (note2a.test(line)) {
+                    var text = '';
+                    setMode = 'desc';
+                } else if (note2b.test(line)) {
+                    setMode = 'none';
+                    obj.sts.desc = text;
                 } else if (setMode === 'data') {
                     text += line + ';';
+                  } else if (setMode === 'desc') {
+                    text += line + '\n';
                 }
             }
             this.setStsData(obj);
@@ -2015,6 +2181,8 @@ function Scene_STS() {
             var case1j = /習得条件:[ ]*(.+)/i;
             var case2 = /(?:COST SP):[ ]*(.+)/i;
             var case2j = /コスト SP:[ ]*(.+)/i;
+            var case2a = /(?:FORGET_SKILLS):[ ]*(\d+(?:\s*,\s*\d+)*)/i;
+            var case2aj = /削除スキル:[ ]*(\d+(?:\s*,\s*\d+)*)/i;
             var case3a = /(?:TREE)[ ](\d+)[ ](?:SKILL):[ ]*(\d+(?:\s*,\s*\d+)*)/i;
             var case3aj = /ツリータイプ (\d+) スキル:[ ]*(\d+(?:\s*,\s*\d+)*)/i;
             var case3b = /(?:SKILL):[ ]*(\d+(?:\s*,\s*\d+)*)/i;
@@ -2049,6 +2217,8 @@ function Scene_STS() {
                     obj.sts.required = String(RegExp.$1);
                 } else if(data.match(case2) || data.match(case2j)) {
                     obj.sts.costs[0].value = String(RegExp.$1);
+                } else if (data.match(case2a) || data.match(case2aj)) {
+                    obj.sts.forgetSkillIds = JSON.parse('[' + RegExp.$1.match(/\d+/g) + ']');
                 } else if(data.match(case3a) || data.match(case3aj)) {
                     var treeId = RegExp.$1;
                     var tree = this.readTree(obj, RegExp.$1, RegExp.$2);
@@ -2114,22 +2284,16 @@ function Scene_STS() {
     Game_Actor.prototype.initMembers = function() {
         _STS_Game_Actor_initMembers.call(this);
         this._stsSp = 0;
-        this._stsLearnSkills = [];
-        this._stsTrees = [];
-        this._stsCount = [];
-        this._stsUsedSp = [];
-        this._stsUsedItem = [];
-        this._stsUsedWeapon = [];
-        this._stsUsedArmor = [];
-        this._stsUsedVar = [];
-        this._stsUsedGold = [];
+        this.checkInitSts();
     };
 
     Game_Actor.prototype.checkInitSts = function() {
-        if (!this._stsCount) this._stsCount = [];
+        if (!this._stsCsp) this._stsCsp = [];
         if (!this._stsLearnSkills) this._stsLearnSkills = [];
         if (!this._stsTrees) this._stsTrees = [];
+        if (!this._stsCount) this._stsCount = [];
         if (!this._stsUsedSp) this._stsUsedSp = [];
+        if (!this._stsUsedCsp) this._stsUsedCsp = [];
         if (!this._stsUsedItem) this._stsUsedItem = [];
         if (!this._stsUsedWeapon) this._stsUsedWeapon = [];
         if (!this._stsUsedArmor) this._stsUsedArmor = [];
@@ -2140,8 +2304,13 @@ function Scene_STS() {
     var _STS_Game_Actor_setup = Game_Actor.prototype.setup;
     Game_Actor.prototype.setup = function(actorId) {
         _STS_Game_Actor_setup.call(this, actorId);
-        if (isMVver_1_4()) ImageManager.loadFace(this.faceName());
-        this.getSp(this.actor().sts.initsp);
+        if (FTKR.STS.sp.enableClassSp) {
+            $dataClasses.forEach( function(dataClass){
+                if (dataClass) this.setCsp(dataClass.id, dataClass.sts.initsp);
+            },this);
+        } else {
+            this.setAsp(this.actor().sts.initsp);
+        }
     };
 
     var _STS_Game_Actor_initSkills = Game_Actor.prototype.initSkills;
@@ -2170,10 +2339,25 @@ function Scene_STS() {
             if (FTKR.STS.learnedSkillVarID) $gameVariables.setValue(FTKR.STS.learnedSkillVarID, skillId);
             this.stsCountUp(skillId);
             this._stsLearnSkills[skillId] = true;
+            this.checkStsForgetSkills(skillId);
         }
         if (this._initStsFlag) {
             this.stsUsedCost(skillId);
         }
+    };
+
+    Game_Actor.prototype.checkStsForgetSkills = function(skillId) {
+        var skillIds = this.stsSkill(skillId).sts.forgetSkillIds;
+        if (!skillIds || !skillIds.length) return;
+        skillIds.forEach( function(id){
+            if (!id) return;
+            var sid = Number(id);
+            if (FTKR.STS.enableSkillCount) {
+                var skill = this.stsSkill(sid);
+                this.setStsSkillCount(sid, skill.sts.maxCount);
+            }
+            _STS_Game_Actor_forgetSkill.call(this, sid);
+        },this);
     };
 
     var _STS_Game_Actor_forgetSkill = Game_Actor.prototype.forgetSkill;
@@ -2191,10 +2375,12 @@ function Scene_STS() {
     };
 
     Game_Actor.prototype.stsCount = function(skillId) {
+        if (!this._stsCount) this._stsCount = [];
         return this._stsCount[skillId] || 0;
     };
 
     Game_Actor.prototype.setStsSkillCount = function(skillId, value) {
+        if (!this._stsCount) this._stsCount = [];
         this._stsCount[skillId] = value;
     };
 
@@ -2234,15 +2420,38 @@ function Scene_STS() {
         },this);
     };
     
+    Game_Actor.prototype.setStsUsedCsp = function(classId, skillId, value) {
+        if (!this._stsUsedCsp) this._stsUsedCsp = [];
+        if (!this._stsUsedCsp[classId]) this._stsUsedCsp[classId] = [];
+        this._stsUsedCsp[classId][skillId] = value;
+    };
+
     Game_Actor.prototype.setStsUsedSp = function(skillId, value) {
-        if (!this._stsUsedSp) this._stsUsedSp = [];
-        this._stsUsedSp[skillId] = value;
+        if (FTKR.STS.sp.enableClassSp) {
+            this.setStsUsedCsp(this._classId, skillId, value);
+        } else {
+            if (!this._stsUsedSp) this._stsUsedSp = [];
+            this._stsUsedSp[skillId] = value;
+        }
+    };
+
+    Game_Actor.prototype.stsUsedCsp = function(classId, skillId) {
+        if (!this._stsUsedCsp) this._stsUsedCsp = [];
+        if (!this._stsUsedCsp[classId]) this._stsUsedCsp[classId] = [];
+        return this._stsUsedCsp[classId][skillId] || 0;
     };
 
     Game_Actor.prototype.stsUsedSp = function(skillId) {
-        if (!this.isLearnedSkill(skillId)) return 0;
-        if (!this._stsUsedSp) this._stsUsedSp = [];
-        return this._stsUsedSp[skillId] || 0;
+        if (FTKR.STS.sp.enableClassSp) {
+            return this.stsUsedCsp(this._classId, skillId);
+        } else {
+            if (!this._stsUsedSp) this._stsUsedSp = [];
+            return this._stsUsedSp[skillId] || 0;
+        }
+    };
+
+    Game_Actor.prototype.addStsUsedCsp = function(classId, skillId, value) {
+        this.setStsUsedCsp(classId, skillId, this.stsUsedCsp(classId, skillId) + value);
     };
 
     Game_Actor.prototype.addStsUsedSp = function(skillId, value) {
@@ -2255,7 +2464,6 @@ function Scene_STS() {
     };
 
     Game_Actor.prototype.stsUsedGold = function(skillId) {
-        if (!this.isLearnedSkill(skillId)) return 0;
         if (!this._stsUsedGold) this._stsUsedGold = [];
         return this._stsUsedGold[skillId] || 0;
     };
@@ -2276,7 +2484,6 @@ function Scene_STS() {
     };
 
     Game_Actor.prototype.stsUsedItems = function(skillId) {
-        if (!this.isLearnedSkill(skillId)) return [];
         this.initStsUsedItem(skillId);
         return this._stsUsedItem[skillId];
     };
@@ -2298,7 +2505,6 @@ function Scene_STS() {
     };
 
     Game_Actor.prototype.stsUsedWeapons = function(skillId) {
-        if (!this.isLearnedSkill(skillId)) return [];
         this.initStsUsedWeapon(skillId);
         return this._stsUsedWeapon[skillId];
     };
@@ -2320,7 +2526,6 @@ function Scene_STS() {
     };
 
     Game_Actor.prototype.stsUsedArmors = function(skillId) {
-        if (!this.isLearnedSkill(skillId)) return [];
         this.initStsUsedArmor(skillId);
         return this._stsUsedArmor[skillId];
     };
@@ -2342,7 +2547,6 @@ function Scene_STS() {
     };
 
     Game_Actor.prototype.stsUsedVars = function(skillId) {
-        if (!this.isLearnedSkill(skillId)) return [];
         this.initStsUsedVar(skillId);
         return this._stsUsedVar[skillId];
     };
@@ -2354,7 +2558,8 @@ function Scene_STS() {
 
     Game_Actor.prototype.evalStsFormula = function(formula, result1, result2) {
         if (!formula) return result1;
-        return Math.max(Math.floor(FTKR.evalFormula(formula)), result2);
+        var result = FTKR.evalFormula(formula);
+        return Math.max(Math.floor(result), result2);
     };
 
     Game_Actor.prototype.payLearnedCost = function(skillId) {
@@ -2394,7 +2599,7 @@ function Scene_STS() {
     };
 
     Game_Actor.prototype.isPayCostNg = function(cost) {
-        var value = this.evalStsFormula(cost.value,0,0);
+        var value = this.evalStsFormula(cost.value, 0, 0);
         switch (cost.type) {
           case 'item':
             return $gameParty.numItems($dataItems[cost.id]) < value;
@@ -2411,16 +2616,54 @@ function Scene_STS() {
         }
     };
 
+    Game_Actor.prototype.getCsp = function(classId, value) {
+        if(isNaN(value)) value = 0;
+        if(isNaN(this._stsCsp[classId])) this._stsCsp[classId] = 0;
+        this._stsCsp[classId] = Math.max(this._stsCsp[classId] + Number(value), 0);
+    };
+
+    Game_Actor.prototype.getAsp = function(value) {
+        if(isNaN(value)) value = 0;
+        if(isNaN(this._stsSp)) this._stsSp = 0;
+        this._stsSp = Math.max(this._stsSp + Number(value), 0);
+    };
+
     Game_Actor.prototype.getSp = function(value) {
-      this._stsSp += value;
+        if (FTKR.STS.sp.enableClassSp) {
+            this.getCsp(this._classId, value);
+        } else {
+            this.getAsp(value);
+        }
+    };
+
+    Game_Actor.prototype.loseCsp = function(classId, value) {
+        this.getCsp(classId, -value);
     };
 
     Game_Actor.prototype.loseSp = function(value) {
-      this._stsSp -= value;
+        this.getSp(-value);
+    };
+
+    Game_Actor.prototype.setCsp = function(classId, value) {
+        if(isNaN(value)) value = 0;
+        this._stsCsp[classId] = Math.max(Number(value), 0);
+    };
+
+    Game_Actor.prototype.setAsp = function(value) {
+        if(isNaN(value)) value = 0;
+        this._stsSp = Math.max(Number(value), 0);
+    };
+
+    Game_Actor.prototype.stsCsp = function(classId) {
+        return this._stsCsp[classId] || 0;
+    };
+
+    Game_Actor.prototype.stsAsp = function() {
+        return this._stsSp || 0;
     };
 
     Game_Actor.prototype.stsSp = function() {
-      return this._stsSp;
+        return FTKR.STS.sp.enableClassSp ? this.stsCsp(this._classId) : this.stsAsp();
     };
 
     Game_Actor.prototype.isStsLearnedSkill = function(skillId) {
@@ -2476,7 +2719,7 @@ function Scene_STS() {
 
     Game_Actor.prototype.getTreeTypes = function() {
       var tTypes = this.actor().sts.treeTypes.concat(this.currentClass().sts.treeTypes, this._stsTrees);
-      return !tTypes.length ? [] : FTKR.duplicateDelete(tTypes);
+      return !tTypes.length ? [] : duplicateDelete(tTypes);
     };
 
     Game_Actor.prototype.addTreetype = function(treeTypeId) {
@@ -2504,13 +2747,18 @@ function Scene_STS() {
         if (!skillTree.length) return 0;
         skillTree.forEach( function(skill) {
             if (!skill) return;
-            if (flag) {
-                this.getSp(this.stsUsedSp(skill.id));
-                $gameParty.gainGold(this.stsUsedGold(skill.id));
+            if (FTKR.STS.sp.enableClassSp) {
+                $dataClasses.forEach( function(dataClass, i){
+                    if (!dataClass) return;
+                    if (flag) this.getCsp(i, this.stsUsedCsp(i, skill.id));
+                    this.setStsUsedCsp(i, skill.id, 0);
+                },this);
+            } else {
+                if (flag) this.getSp(this.stsUsedSp(skill.id));
+                this.setStsUsedSp(skill.id, 0);
             }
-            this.setStsUsedSp(skill.id, 0);
+            if (flag) $gameParty.gainGold(this.stsUsedGold(skill.id));
             this.setStsUsedGold(skill.id, 0);
-
             this.stsUsedItems(skill.id).forEach( function(itemNum, i){
                 if (!itemNum) return;
                 if (flag)$gameParty.gainItem($dataItems[i], itemNum);
@@ -2588,7 +2836,7 @@ function Scene_STS() {
                           }
                         }
                         FTKR.setGameData(this, null, item);
-                        if (this.evalStsFormula(item.sts.show, true)) {
+                        if (this.evalStsFormula(item.sts.show, true, false)) {
                             var skillIds = this.getDevSkillId(item, tree);
                             var data = { id:id, next:skillIds, x:i + dupCount, y:count };
                             results.forEach( function(result, t){
@@ -2684,6 +2932,14 @@ function Scene_STS() {
         this.makeSuccess(target);
     };
 
+    Game_Action.prototype.stsCount = function() {
+        if (this.isSkill()) {
+            var id= this._item.itemId();
+            return this.subject().stsCount(id);
+        }
+        return 0;
+    };
+
     //=============================================================================
     // Game_Enemy
     //=============================================================================
@@ -2764,15 +3020,20 @@ function Scene_STS() {
     Window_Base.prototype.getStsDesc = function(skill) {
         if (Imported.FTKR_SEP) {
             var actor = $gameActors.actor(skill.actorId);
-            if (!actor) return skill.description;
+            if (!actor) return this.ftItemDesc(skill);
             var descs = skill.descs.filter( function(desc) {
                 return actor.evalEnabledFormula(desc.enabled, skill);
             });
             var desc = descs.pop();
             return desc ? desc.description : '';
         } else {
-            return skill.description;
+            var desc = this.getStsSubDesc(skill);
+            return desc ? desc : this.ftItemDesc(skill);
         }
+    };
+
+    Window_Base.prototype.getStsSubDesc = function(skill) {
+        return skill.sts.desc;
     };
 
     /*-------------------------------------------------------------
@@ -2834,6 +3095,16 @@ function Scene_STS() {
     /*-------------------------------------------------------------
       制御文字の表示処理の修正
     -------------------------------------------------------------*/
+    
+    var _STS_Window_Base_convertEscapeCharacters = Window_Base.prototype.convertEscapeCharacters;
+    Window_Base.prototype.convertEscapeCharacters = function(text) {
+        text = _STS_Window_Base_convertEscapeCharacters.call(this, text);
+        text = text.replace(/\x1bSDATA\[(\d+),([^\]]+)\]/gi, function() {
+            return $dataSkills[parseInt(arguments[1])][arguments[2]];
+        }.bind(this));
+        return text;
+    };
+
     var _STS_Window_Base_processEscapeCharacter = Window_Base.prototype.processEscapeCharacter;
     Window_Base.prototype.processEscapeCharacter = function(code, textState) {
         switch (code) {
@@ -2864,6 +3135,24 @@ function Scene_STS() {
         textState.x += args[0];
     };
 
+    if (!Window_Base.prototype.ftItemName) {
+        Window_Base.prototype.ftItemName = function(item) {
+            return !!item ? item.name : '';
+        };
+    }
+    
+    if (!Window_Base.prototype.ftItemIcon) {
+        Window_Base.prototype.ftItemIcon = function(item) {
+            return !!item ? item.iconIndex : 0;
+        };
+    }
+    
+    if (!Window_Base.prototype.ftItemDesc) {
+        Window_Base.prototype.ftItemDesc = function(item) {
+            return !!item ? item.description : '';
+        };
+    }
+    
     //=============================================================================
     // Window_Selectable
     //=============================================================================
@@ -3134,7 +3423,7 @@ function Scene_STS() {
 
     Window_SkillTree.prototype.drawTreeIcon = function(skill, rect) {
         var ssi = FTKR.STS.sFrame.icon;
-        this.drawIcon(skill.iconIndex, rect.x + ssi.offsetX, rect.y + ssi.offsetY);
+        this.drawIcon(this.ftItemIcon(skill), rect.x + ssi.offsetX, rect.y + ssi.offsetY);
     };
 
     Window_SkillTree.prototype.drawFrame = function(index, skill, data) {
@@ -3174,7 +3463,7 @@ function Scene_STS() {
     Window_SkillTree.prototype.drawSkillText = function(skill, x, y, width, color, sts) {
         var stx = sts.offsetX;
         this.changeTextColor(this.textColor(color));
-        this.drawFormatTextEx(sts.format, x + stx, y + sts.offsetY, [skill.name]);
+        this.drawFormatTextEx(sts.format, x + stx, y + sts.offsetY, [this.ftItemName(skill)]);
     };
 
     //スキルの習得回数を表示
@@ -3264,16 +3553,16 @@ function Scene_STS() {
     };
 
     Window_SkillTree.prototype.setFrameColor = function(data) {
-      var sts = FTKR.STS.sFrame.color;
-      if (this._actor.isStsLearnedSkill(data.id)) {
-        return sts.isLearned;
-      } else if (this.isLearnOk(data)) {
-        return sts.isLearnOk;
-      } else if (!this.isReqSkillOk(data)) {
-        return sts.isReqSkillNg;
-      } else {
-        return sts.isReqNg;
-      }
+        var sts = FTKR.STS.sFrame.color;
+        if (this._actor.isStsLearnedSkill(data.id)) {
+          return sts.isLearned;
+        } else if (this.isLearnOk(data)) {
+          return sts.isLearnOk;
+        } else if (!this.isReqSkillOk(data)) {
+          return sts.isReqSkillNg;
+        } else {
+          return sts.isReqNg;
+        }
     };
 
     Window_SkillTree.prototype.refresh = function() {
@@ -3283,42 +3572,42 @@ function Scene_STS() {
     };
 
     Window_SkillTree.prototype.setTtypeId = function(tTypeId) {
-      if (this._tTypeId === tTypeId) return;
-      this._tTypeId = tTypeId;
-      this.refresh();
+        if (this._tTypeId === tTypeId) return;
+        this._tTypeId = tTypeId;
+        this.refresh();
     };
 
     Window_SkillTree.prototype.defineLearnSound = function() {
-      this.setLearnSound();
+        this.setLearnSound();
     };
 
     Window_SkillTree.prototype.setStatusTitleWindow = function(window) {
-      this._stsStatusTitleWindow = window;
-      this.update();
+        this._stsStatusTitleWindow = window;
+        this.update();
     };
 
     Window_SkillTree.prototype.setConfWindow = function(window) {
-      this._confWindow = window;
-      this.update();
+        this._confWindow = window;
+        this.update();
     };
 
     Window_SkillTree.prototype.setCostWindow = function(window) {
-      this._costWindow = window;
-      this.update();
+        this._costWindow = window;
+        this.update();
     };
 
     Window_SkillTree.prototype.setPreskillWindow = function(window) {
-      this._preskillWindow = window;
-      this.update();
+        this._preskillWindow = window;
+        this.update();
     };
 
     Window_SkillTree.prototype.update = function() {
-      Window_Selectable.prototype.update.call(this);
-      this._skillId = this.item() ? this.item().id : null;
-      if (this._stsStatusTitleWindow) this._stsStatusTitleWindow.setSkillId(this._skillId);
-      if (this._confWindow) this._confWindow.setEnabled(this.isLearnOk(this.item()));
-      if (this._costWindow) this._costWindow.setSkillId(this._skillId);
-      if (this._preskillWindow) this._preskillWindow.setSkillId(this._skillId);
+        Window_Selectable.prototype.update.call(this);
+        this._skillId = this.item() ? this.item().id : null;
+        if (this._stsStatusTitleWindow) this._stsStatusTitleWindow.setSkillId(this._skillId);
+        if (this._confWindow) this._confWindow.setEnabled(this.isLearnOk(this.item()));
+        if (this._costWindow) this._costWindow.setSkillId(this._skillId);
+        if (this._preskillWindow) this._preskillWindow.setSkillId(this._skillId);
     };
 
     Window_SkillTree.prototype.select = function(index) {
@@ -3431,19 +3720,19 @@ function Scene_STS() {
     Window_StsConf.prototype.constructor = Window_StsConf;
 
     Window_StsConf.prototype.initialize = function(x, y, width, height) {
-      Window_Selectable.prototype.initialize.call(this, x, y, width, height);
-      this.setLearnSound();
-      this._actor = null;
-      this._data = [];
-      this._enabled = false;
-      this._dicision = false;
+        Window_Selectable.prototype.initialize.call(this, x, y, width, height);
+        this.setLearnSound();
+        this._actor = null;
+        this._data = [];
+        this._enabled = false;
+        this._dicision = false;
     };
 
     Window_StsConf.prototype.setActor = function(actor) {
-      if (this._actor !== actor) {
-        this._actor = actor;
-        this.refresh();
-      }
+        if (this._actor !== actor) {
+            this._actor = actor;
+            this.refresh();
+        }
     };
 
     Window_StsConf.prototype.maxCols = function() {
@@ -3689,16 +3978,20 @@ function Scene_STS() {
     // Scene_STS
     //=============================================================================
 
-    Scene_STS.prototype = Object.create(Scene_Skill.prototype);
+    Scene_STS.prototype = Object.create(Scene_MenuBase.prototype);
     Scene_STS.prototype.constructor = Scene_STS;
 
     Scene_STS.prototype.initialize = function() {
-      Scene_Skill.prototype.initialize.call(this);
+      Scene_MenuBase.prototype.initialize.call(this);
+    };
+    
+    Scene_STS.prototype.start = function() {
+      Scene_MenuBase.prototype.start.call(this);
+      this.refreshActor();
     };
 
     Scene_STS.prototype.create = function() {
-      Scene_ItemBase.prototype.create.call(this);
-      this.createHelpWindow();
+      Scene_MenuBase.prototype.create.call(this);
       this.createStsActorStatusWindow();
       this.createTreeTypeWindow();
       this.createSkillTreeWindow();
@@ -3713,14 +4006,13 @@ function Scene_STS() {
 
     Scene_STS.prototype.createStsActorStatusWindow = function() {
       this._stsActorStatusWindow = new Window_StsActorStatus(0, 0, 240, 144);
-      if(!isMVver_1_4()) this._stsActorStatusWindow.reserveFaceImages();
+      this._stsActorStatusWindow.reserveFaceImages();
       this.addWindow(this._stsActorStatusWindow);
     };
 
     Scene_STS.prototype.createTreeTypeWindow = function() {
       this._stsTreeTypeWindow = new Window_TreeType(0, 144, 240, 288);
       var window = this._stsTreeTypeWindow;
-      window.setHelpWindow(this._helpWindow);
       window.setHandler('ok',       this.onTreeTypeOk.bind(this));
       window.setHandler('cancel',   this.popScene.bind(this));
       window.setHandler('pagedown', this.nextActor.bind(this));
@@ -3736,7 +4028,6 @@ function Scene_STS() {
       var wh = Graphics.boxHeight - wy;
       this._stsSkillTreeWindow = new Window_SkillTree(wx, wy, ww, wh);
       var window = this._stsSkillTreeWindow;
-      window.setHelpWindow(this._helpWindow);
       window.setHandler('ok',     this.onSkillTreeOk.bind(this));
       window.setHandler('cancel', this.onSkillTreeCancel.bind(this));
       this._stsTreeTypeWindow.setSkillTreeWindow(window);
@@ -3753,7 +4044,7 @@ function Scene_STS() {
     };
 
     Scene_STS.prototype.createStsConfTitleWindow = function() {
-      var wh = this._helpWindow.lineHeight() + this._helpWindow.standardPadding() * 2;
+      var wh = this._stsActorStatusWindow.fittingHeight(1);
       this._stsConfTitleWindow = new Window_StsConfTitle(204, 120, 408, wh);
       this.addWindow(this._stsConfTitleWindow);
     };
@@ -3763,7 +4054,7 @@ function Scene_STS() {
       var wx = ctw.x;
       var wy = ctw.y + ctw.height;
       var ww = ctw.width;
-      var wh = this._helpWindow.lineHeight() * 1 + this._helpWindow.standardPadding() * 2;
+      var wh = this._stsActorStatusWindow.fittingHeight(1);
       this._stsConfWindow = new Window_StsConf(wx, wy, ww, wh);
       var window = this._stsConfWindow;
       window.setHandler('ok', this.onConfirmationOk.bind(this));
@@ -3884,6 +4175,20 @@ function Scene_STS() {
       this._stsConfWindow.show();
       this._stsConfTitleWindow.show();
       this._stsPreskillWindow.show();
+    };
+
+    Scene_STS.prototype.update = function() {
+        Scene_MenuBase.prototype.update.call(this);
+        if (this.isAllWindowDeactive()) this._stsTreeTypeWindow.activate();
+    };
+
+    Scene_STS.prototype.isAllWindowDeactive = function() {
+        return this._stsConfWindow ? 
+            (this._stsConfWindow.active !== true && 
+            this._stsSkillTreeWindow.active !== true &&
+            this._stsTreeTypeWindow.active !== true) :
+            (this._stsTreeTypeWindow.active !== true && 
+            this._stsSkillTreeWindow.active !== true);
     };
 
     //=============================================================================

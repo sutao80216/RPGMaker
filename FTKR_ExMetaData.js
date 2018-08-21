@@ -1,10 +1,11 @@
 //=============================================================================
 // メタデータを拡張するプラグイン
 // FTKR_ExMetaData.js
+// プラグインNo : 36
 // 作成者     : フトコロ
 // 作成日     : 2017/05/05
-// 最終更新日 : 
-// バージョン : v1.0.0
+// 最終更新日 : 2018/02/19
+// バージョン : v1.0.1
 //=============================================================================
 
 var Imported = Imported || {};
@@ -15,7 +16,7 @@ FTKR.EMD = FTKR.EMD || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.0.0 メタデータを拡張するプラグイン
+ * @plugindesc v1.0.1 メタデータを拡張するプラグイン
  * @author フトコロ
  * 
  * @help 
@@ -50,13 +51,20 @@ FTKR.EMD = FTKR.EMD || {};
  * 本プラグインはMITライセンスのもとで公開しています。
  * This plugin is released under the MIT License.
  * 
- * Copyright (c) 2017 Futokoro
+ * Copyright (c) 2017,2018 Futokoro
  * http://opensource.org/licenses/mit-license.php
+ * 
+ * 
+ * プラグイン公開元
+ * https://github.com/futokoro/RPGMaker/blob/master/README.md
  * 
  * 
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
+ * 
+ * v1.0.1 - 2018/02/19 : 不具合修正
+ *    1. メニュー開閉で、メタデータが消える不具合を修正。
  * 
  * v1.0.0 - 2017/05/05 : 初版作成
  * 
@@ -98,11 +106,13 @@ var readPagesCommentMetadata = function(obj, pages) {
 //=============================================================================
 // イベントのコメント欄のメタデータ取得
 //=============================================================================
+/*
 FTKR.EMD.Game_Map_setupEvents = Game_Map.prototype.setupEvents;
 Game_Map.prototype.setupEvents = function() {
     this.readEventsCommentMetadata();
     FTKR.EMD.Game_Map_setupEvents.call(this);
 };
+*/
 
 Game_Map.prototype.readEventsCommentMetadata = function() {
     for (var i = 1; i < $dataMap.events.length; i++ ) {
@@ -111,6 +121,12 @@ Game_Map.prototype.readEventsCommentMetadata = function() {
             readPagesCommentMetadata(event, event.pages);
         }
     }
+};
+
+FTKR.EMD.Scene_Map_start = Scene_Map.prototype.start;
+Scene_Map.prototype.start = function() {
+    FTKR.EMD.Scene_Map_start.call(this);
+    $gameMap.readEventsCommentMetadata();
 };
 
 //=============================================================================

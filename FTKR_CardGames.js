@@ -1,10 +1,11 @@
 //=============================================================================
 // トランプカードゲームプラグイン
 // FTKR_CardGames.js
+// プラグインNo : 51
 // 作成者     : フトコロ
 // 作成日     : 2017/07/02
-// 最終更新日 : 2017/10/02
-// バージョン : v1.2.1
+// 最終更新日 : 2018/08/13
+// バージョン : v1.2.4
 //=============================================================================
 
 var Imported = Imported || {};
@@ -15,7 +16,7 @@ FTKR.CRD = FTKR.CRD || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.2.1 トランプカードゲーム
+ * @plugindesc v1.2.4 トランプカードゲーム
  * @author フトコロ
  *
  * @param --カードの設定--
@@ -249,6 +250,13 @@ FTKR.CRD = FTKR.CRD || {};
  * @desc 手札カードの表示高さを設定します。
  * @default 180
  * @type number
+ *
+ * @param Hand Frame
+ * @desc 手札の背景枠の表示有無を設定します。
+ * @default true
+ * @type boolean
+ * @on 表示する
+ * @off 表示しない
  *
  * @param Dialogue Width
  * @desc 台詞ウィンドウの幅を設定します。
@@ -720,6 +728,20 @@ FTKR.CRD = FTKR.CRD || {};
  * 変更来歴
  *-----------------------------------------------------------------------------
  * 
+ * v1.2.4 - 2018/08/13 : 不具合修正
+ *    1. 二人プレイでゲーム終了時に、点数獲得の前にゲーム終了しまう不具合を修正。
+ * 
+ * v1.2.3 - 2018/08/12 : 不具合修正
+ *    1. プレイヤーの最後の台詞が、次のゲームまで残ってしまう不具合を修正。
+ *    2. 手札ウィンドウの背景枠の表示有無の設定機能を追加。
+ * 
+ * v1.2.2 - 2018/08/12 : 不具合修正
+ *    1. プレイヤーが最後まで残った場合に、他に残っているNPCがいないのに
+ *       カードが引けてしまいエラーになる不具合を修正。
+ *    2. ２ゲーム目以降で、カードを配っている間に決定ボタンを押すと、カードを
+ *       すべて配っていないにもかかわらず、その時点でカード配りを終了して
+ *       ゲームが始まってしまう不具合を修正。
+ * 
  * v1.2.1 - 2017/10/02 : ヘルプ修正
  *    1. NPCの台詞の設定に関する誤記修正
  * 
@@ -791,6 +813,18 @@ function CardGameManager() {
       });
     }
 
+    var paramParse = function(obj) {
+        return JSON.parse(JSON.stringify(obj, paramReplace));
+    };
+
+    var paramReplace = function(key, value) {
+        try {
+            return JSON.parse(value || null);
+        } catch (e) {
+            return value;
+        }
+    };
+
     var splitConvertNumber = function(param) {
         var results = [];
         (param + '').split(',').forEach( function(split){
@@ -821,6 +855,7 @@ function CardGameManager() {
             targetPosi :Number(parameters['Target Position'] || 0),
             width      :Number(parameters['Hand Width'] || 432),
             height     :Number(parameters['Hand Height'] || 180),
+            frame      :paramParse(parameters['Hand Frame'] || false),
             dialogue:{
                 skin   :String(parameters['Dialogue Skin'] || ''),
                 width  :Number(parameters['Dialogue Width'] || 240),
@@ -2176,8 +2211,9 @@ function CardGameManager() {
         this.clearHands();
         this.clearRanks();
         this.settingGame();
+        this.resetDialogue();
         this._messageBoxWindow.activate();
-        this._input = 'start';
+        this._input = 'deal';
     };
 
     Scene_CRD.prototype.clearHands = function() {
@@ -2230,6 +2266,20 @@ function CardGameManager() {
     };
 
     Scene_CRD.prototype.updateEvent = function() {
+        /*
+        switch (this._phase) {
+            case 'turnStart':
+            case 'input':
+            case 'select':
+            case 'draw':
+            case 'checkPair':
+            case 'disCard':
+            case 'turnEnd':
+                if (this.checkGameEnd()) {
+                    return true;
+                }
+        }
+        */
         return CardGameManager.updateEvent(this._phase);
     };
 
@@ -2330,6 +2380,7 @@ function CardGameManager() {
     Scene_CRD.prototype.updateInput = function() {
         switch (this._input) {
             case 'draw':
+                if (this.checkGameEnd()) return;
                 var hand = this.reduceCard(this.targetId(), this._handIndex);
                 var holdId = this.subjectWindow().cardNum();
                 this.subjectWindow().addHand(holdId, hand.suit, hand.rank);
@@ -2379,12 +2430,14 @@ function CardGameManager() {
     };
 
     Scene_CRD.prototype.updateDraw = function() {
+        if (this.checkGameEnd()) return;
         this.resetTempFace();
         this.resetDialogue();
         this._messageBoxWindow.clearText();
         this._hand = this.reduceCard(this.targetId(), this._handIndex);
         this.addHand(this.subjectId(), this._hand);
         this._phase = 'checkPair';
+        if (this.checkGameEnd()) return;
     };
 
     Scene_CRD.prototype.updateDiscard = function() {
@@ -2488,8 +2541,7 @@ function CardGameManager() {
 
     Scene_CRD.prototype.selectCard = function(index, isPlayer) {
         var window = this._handWindows[index];
-        var handIndex = isPlayer ? window.index() :
-            this.drawNPCHand();
+        var handIndex = isPlayer ? window.index() : this.drawNPCHand();
         window.moveCardUp(handIndex);
         return handIndex;
     };
@@ -2508,15 +2560,6 @@ function CardGameManager() {
 
     Scene_CRD.prototype.reduceCard = function(index, handIndex) {
         var window = this._handWindows[index];
-        var hand = window.reduceHand(handIndex);
-        this.checkOutGame(index);
-        return hand;
-    };
-
-    Scene_CRD.prototype.reduceHand = function(index, isPlayer) {
-        var window = this._handWindows[index];
-        var handIndex = isPlayer ? window.index() :
-            this.drawNPCHand();
         var hand = window.reduceHand(handIndex);
         this.checkOutGame(index);
         return hand;
@@ -2614,6 +2657,7 @@ function CardGameManager() {
         this.clearHand();
         Window_Selectable.prototype.initialize.call(this, x, y, width, height);
         this.setCardSize();
+        if (!FTKR.CRD.layout.frame) this.opacity = 0;
         this.refresh();
     };
 

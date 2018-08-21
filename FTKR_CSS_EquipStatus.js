@@ -1,10 +1,11 @@
 //=============================================================================
 // 装備画面のステータスレイアウトを変更するプラグイン
 // FTKR_CSS_EquipStatus.js
+// プラグインNo : 38
 // 作成者     : フトコロ
 // 作成日     : 2017/05/13
-// 最終更新日 : 2017/07/23
-// バージョン : v1.0.2
+// 最終更新日 : 2018/08/19
+// バージョン : v2.0.0
 //=============================================================================
 
 var Imported = Imported || {};
@@ -15,41 +16,22 @@ FTKR.CSS = FTKR.CSS || {};
 FTKR.CSS.ES = FTKR.CSS.ES || {};
 
 /*:
- * @plugindesc v1.0.2 装備画面のステータスレイアウトを変更する
+ * @plugindesc v2.0.0 装備画面のステータスレイアウトを変更する
  * @author フトコロ
  *
  * @param --レイアウト設定--
  * @default
  * 
- * @param Actor Status Text1
- * @desc Text1部に表示するステータスを指定します。
- * 詳細はヘルプ参照
- * @default name,param(2),param(3),param(4),param(5),param(6),param(7)
- * 
- * @param Actor Status Text2
- * @desc Text2部に表示するステータスを指定します。
- * 詳細はヘルプ参照
- * @default ,eparam(2),eparam(3),eparam(4),eparam(5),eparam(6),eparam(7)
- * 
- * @param Actor Status Text3
- * @desc Text3部に表示するステータスを指定します。
- * 詳細はヘルプ参照
- * @default 
- * 
- * @param Actor Status Space
- * @desc 各Textの間隔を指定します。
- * @default 0,0,0,0
+ * @param statusList
+ * @desc 表示するステータスとその位置を設定します。
+ * @type struct<status>[]
+ * @default ["{\"text\":\"name\",\"x\":\"6\",\"y\":\"0\",\"width\":\"150\"}","{\"text\":\"param(2)\",\"x\":\"6\",\"y\":\"line*1\",\"width\":\"width * 2 / 3 - 6\"}","{\"text\":\"param(3)\",\"x\":\"6\",\"y\":\"line*2\",\"width\":\"width * 2 / 3 - 6\"}","{\"text\":\"param(4)\",\"x\":\"6\",\"y\":\"line*3\",\"width\":\"width * 2 / 3 - 6\"}","{\"text\":\"param(5)\",\"x\":\"6\",\"y\":\"line*4\",\"width\":\"width * 2 / 3 - 6\"}","{\"text\":\"param(6)\",\"x\":\"6\",\"y\":\"line*5\",\"width\":\"width * 2 / 3 - 6\"}","{\"text\":\"param(7)\",\"x\":\"6\",\"y\":\"line*6\",\"width\":\"width * 2 / 3 - 6\"}","{\"text\":\"eparam(2)\",\"x\":\"width * 2 / 3\",\"y\":\"line*1\",\"width\":\"width / 3\"}","{\"text\":\"eparam(3)\",\"x\":\"width * 2 / 3\",\"y\":\"line*2\",\"width\":\"width / 3\"}","{\"text\":\"eparam(4)\",\"x\":\"width * 2 / 3\",\"y\":\"line*3\",\"width\":\"width / 3\"}","{\"text\":\"eparam(5)\",\"x\":\"width * 2 / 3\",\"y\":\"line*4\",\"width\":\"width / 3\"}","{\"text\":\"eparam(6)\",\"x\":\"width * 2 / 3\",\"y\":\"line*5\",\"width\":\"width / 3\"}","{\"text\":\"eparam(7)\",\"x\":\"width * 2 / 3\",\"y\":\"line*6\",\"width\":\"width / 3\"}"]
  * 
  * @param Actor Status Space In Text
  * @desc Text内で複数表示する場合の間隔を指定します。
  * @default 5
  * @number
  * 
- * @param Actor Status Width Rate
- * @desc Text1~Text3の表示幅の比率を指定します。
- * 詳細はヘルプ参照
- * @default 2,1,0
- *
  * @param --ウィンドウ設定--
  * @desc 
  * 
@@ -107,7 +89,7 @@ FTKR.CSS.ES = FTKR.CSS.ES || {};
  *    ください。
  * 
  * 2. 本プラグインを動作させるためには、
- *    FTKR_CustomSimpleActorStatus.jsが必要です。
+ *    FTKR_CustomSimpleActorStatus.js(v3.0.0以降)が必要です。
  *    本プラグインは、FTKR_CustomSimpleActorStatus.jsよりも下の位置に
  *    なるように追加してください。
  * 
@@ -207,13 +189,21 @@ FTKR.CSS.ES = FTKR.CSS.ES || {};
  * 本プラグインはMITライセンスのもとで公開しています。
  * This plugin is released under the MIT License.
  * 
- * Copyright (c) 2017 Futokoro
+ * Copyright (c) 2017,2018 Futokoro
  * http://opensource.org/licenses/mit-license.php
  * 
+ * 
+ * プラグイン公開元
+ * https://github.com/futokoro/RPGMaker/blob/master/README.md
  * 
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
+ * 
+ * v2.0.0 - 2018/08/19 : FTKR_CustomSimpleActorStatus v3.0.0 対応版に変更
+ * 
+ * v1.1.0 - 2017/11/18 : 仕様変更
+ *    1. FTKR_CustomSimpleActorStatus.js の v2.6.0に対応。
  * 
  * v1.0.2 - 2017/07/23 : 不具合修正
  *    1. ウィンドウの設定が反映されない不具合を修正。
@@ -226,8 +216,38 @@ FTKR.CSS.ES = FTKR.CSS.ES || {};
  *-----------------------------------------------------------------------------
 */
 //=============================================================================
+/*~struct~status:
+ * @param text
+ * @desc 表示するステータス
+ * @default 
+ *
+ * @param x
+ * @desc 表示するX座標
+ * @default 0
+ *
+ * @param y
+ * @desc 表示するY座標
+ * @default 0
+ *
+ * @param width
+ * @desc 表示する幅
+ * @default 0
+ *
+ */
 
 if (Imported.FTKR_CSS) (function() {
+    var paramParse = function(obj) {
+        return JSON.parse(JSON.stringify(obj, paramReplace));
+    };
+
+    var paramReplace = function(key, value) {
+        try {
+            return JSON.parse(value || null);
+        } catch (e) {
+            return value;
+        }
+    };
+
 
     //=============================================================================
     // プラグイン パラメータ
@@ -236,30 +256,32 @@ if (Imported.FTKR_CSS) (function() {
 
     //簡易ステータスオブジェクト
     FTKR.CSS.ES.simpleStatus = {
-        text1     :String(parameters['Actor Status Text1'] || ''),
-        text2     :String(parameters['Actor Status Text2'] || ''),
-        text3     :String(parameters['Actor Status Text3'] || ''),
-        space     :String(parameters['Actor Status Space'] || ''),
-        spaceIn   :Number(parameters['Actor Status Space In Text'] || 0),
-        widthRate :String(parameters['Actor Status Width Rate'] || ''),
-        target    :null,
+        statusList : paramParse(parameters['statusList']),
+        spaceIn    : Number(parameters['Actor Status Space In Text'] || 0),
+        target     : null,
     };
 
     FTKR.CSS.ES.window = {
         enabled       :Number(parameters['Enabled Custom Window'] || 0),
         numVisibleRows:Number(parameters['Number Visible Rows'] || 0),
-        maxCols       :Number(parameters['Number Max Cols'] || 0),
         fontSize      :Number(parameters['Font Size'] || 0),
         padding       :Number(parameters['Window Padding'] || 0),
         lineHeight    :Number(parameters['Window Line Height'] || 0),
         opacity       :Number(parameters['Window Opacity'] || 0),
         hideFrame     :Number(parameters['Hide Window Frame'] || 0),
-        cursolHeight  :Number(parameters['Cursol Line Number'] || 0),
     };
 
     //=============================================================================
     // Window_EquipStatus
     //=============================================================================
+
+    Window_EquipStatus.prototype.standardCssLayout = function() {
+        return FTKR.CSS.ES.window;
+    };
+
+    Window_EquipStatus.prototype.standardCssStatus = function() {
+        return FTKR.CSS.ES.simpleStatus;
+    };
 
     //書き換え
     Window_EquipStatus.prototype.evalCssCustomFormula = function(actor, formula) {
@@ -272,51 +294,19 @@ if (Imported.FTKR_CSS) (function() {
     Window_EquipStatus.prototype.refresh = function() {
         this.contents.clear();
         if (this._actor) {
+            var lss = this._lssStatus;
             var w = this.width - this.padding * 2;
             var h = this.height - this.padding * 2;
-            FTKR.CSS.ES.simpleStatus.target = this._tempActor;
-            this.drawCssActorStatus(0, this._actor, 0, 0, w, h, FTKR.CSS.ES.simpleStatus);
+            lss.target = this._tempActor;
+            this.drawCssActorStatus(0, this._actor, 0, 0, w, h, lss);
         }
     };
 
-    if(FTKR.CSS.ES.window.enabled) {
-
-    //書き換え
     //ウィンドウの行数
+    var _DS_Window_EquipStatus_numVisibleRows = Window_EquipStatus.prototype.numVisibleRows;
     Window_EquipStatus.prototype.numVisibleRows = function() {
-        return FTKR.CSS.ES.window.numVisibleRows;
+        return FTKR.CSS.ES.window.enable ? FTKR.CSS.ES.window.numVisibleRows :
+        _DS_Window_EquipStatus_numVisibleRows.call(this);
     };
-
-    //書き換え
-    //ウィンドウのフォントサイズ
-    Window_EquipStatus.prototype.standardFontSize = function() {
-        return FTKR.CSS.ES.window.fontSize;
-    };
-
-    //書き換え
-    //ウィンドウに周囲の余白サイズ
-    Window_EquipStatus.prototype.standardPadding = function() {
-        return FTKR.CSS.ES.window.padding;
-    };
-
-    //書き換え
-    //ウィンドウ内の1行の高さ
-    Window_EquipStatus.prototype.lineHeight = function() {
-        return FTKR.CSS.ES.window.lineHeight;
-    };
-
-    //書き換え
-    //ウィンドウの背景の透明度
-    Window_EquipStatus.prototype.standardBackOpacity = function() {
-        return FTKR.CSS.ES.window.opacity;
-    };
-
-    //書き換え
-    //ウィンドウ枠の表示
-    Window_EquipStatus.prototype._refreshFrame = function() {
-        if (!FTKR.CSS.ES.window.hideFrame) Window.prototype._refreshFrame.call(this);
-    };
-
-    }//ウィンドウカスタム有効
-
+    
 }());//FTKR_CustomSimpleActorStatus.jsが必要

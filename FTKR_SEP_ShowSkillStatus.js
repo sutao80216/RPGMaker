@@ -1,10 +1,11 @@
 ﻿//=======↓本プラグインを改変した場合でも、この欄は消さないでください↓===============
 // スキルのステータスを表示するプラグイン
 // FTKR_SEP_ShowSkillStatus.js
+// プラグインNo : 6
 // 作成者     : フトコロ
 // 作成日     : 2017/02/24
-// 最終更新日 : 2017/10/19
-// バージョン : v1.4.5
+// 最終更新日 : 2018/08/16
+// バージョン : v1.4.7
 //=======↑本プラグインを改変した場合でも、この欄は消さないでください↑===============
 
 var Imported = Imported || {};
@@ -15,7 +16,7 @@ FTKR.SSS = FTKR.SSS || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.4.5 スキルのステータスを表示するプラグイン
+ * @plugindesc v1.4.7 スキルのステータスを表示するプラグイン
  * @author フトコロ
  *
  * @param ---Layout---
@@ -919,14 +920,24 @@ FTKR.SSS = FTKR.SSS || {};
  * 本プラグインはMITライセンスのもとで公開しています。
  * This plugin is released under the MIT License.
  * 
- * Copyright (c) 2017 Futokoro
+ * Copyright (c) 2017,2018 Futokoro
  * http://opensource.org/licenses/mit-license.php
+ * 
+ * 
+ * プラグイン公開元
+ * https://github.com/futokoro/RPGMaker/blob/master/README.md
  * 
  * 
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
  *
+ * v1.4.7 - 2018/08/16 : FTKR_SkillExpansion.js v1.4.1の更新対応
+ * 
+ * v1.4.6 - 2018/03/27 : 不具合修正
+ *    1. FTKR_SkillUpgradeSystemとYEP_JobPoints.jsと組み合わせた時に
+ *       JPをコストに設定しても、現在JPが表示されない不具合修正。
+ * 
  * v1.4.5 - 2017/10/19 : 不具合修正
  *    1. スキルステータスウィンドウを非表示設定にしていても、内部で
  *       描画処理されていた不具合を修正
@@ -1499,6 +1510,8 @@ Window_Base.prototype.setSepCost = function(cost) {
     case 'armor':
       var item = $dataArmors[cost.id];
       return this.setCost(item.iconIndex, item.name, $gameParty.numItems(item));
+    case 'jp':
+      return this.setCost(Yanfly.Icon.Jp, Yanfly.Param.Jp, this._actor.jp(this._actor._classId));
     default:
       return this.setCost(0, '', 0);
   }
@@ -1972,7 +1985,7 @@ Window_SkillList.prototype.checkCostNum = function(skill) {
     var actor = this._actor;
     if (actor.skillMpCost(skill) > 0) count += 1;
     if (actor.skillTpCost(skill) > 0) count += 1;
-    if (actor.skillHpCost(skill) > 0) count += 1;
+    if (actor.sepSkillHpCost(skill) > 0) count += 1;
     return count;
 };
 
@@ -1992,8 +2005,8 @@ Window_SkillList.prototype.drawSepSkillCost = function(skill, x, y, width) {
         dx -= len;
         samlen += len;
     }
-    if (this._actor.skillHpCost(skill) > 0) {
-        var param1 = [this._actor.skillHpCost(skill)];
+    if (this._actor.sepSkillHpCost(skill) > 0) {
+        var param1 = [this._actor.sepSkillHpCost(skill)];
         len = this.drawFormatText(FTKR.SSS.hpCostFormat, dx, y, param1, this.costWidth());
         samlen += len;
     }
@@ -2003,9 +2016,9 @@ Window_SkillList.prototype.drawSepSkillCost = function(skill, x, y, width) {
 
 FTKR.SSS.Window_SkillList_drawSkillCost = Window_SkillList.prototype.drawSkillCost;
 Window_SkillList.prototype.drawSkillCost = function(skill, x, y, width) {
-    if (this._actor.skillHpCost(skill) > 0) {
+    if (this._actor.sepSkillHpCost(skill) > 0) {
         this.changeTextColor(this.textColor(21));
-        this.drawText(this._actor.skillHpCost(skill), x, y, width, 'right');
+        this.drawText(this._actor.sepSkillHpCost(skill), x, y, width, 'right');
     } else {
         FTKR.SSS.Window_SkillList_drawSkillCost.call(this, skill, x, y, width);
     }

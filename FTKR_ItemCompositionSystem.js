@@ -3,8 +3,8 @@
 // FTKR_ItemConpositionSystem.js
 // 作成者     : フトコロ
 // 作成日     : 2017/04/08
-// 最終更新日 : 2017/11/01
-// バージョン : v1.5.2
+// 最終更新日 : 2018/07/12
+// バージョン : v1.5.4
 //=============================================================================
 
 var Imported = Imported || {};
@@ -15,7 +15,7 @@ FTKR.ICS = FTKR.ICS || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.5.2 アイテム合成システム
+ * @plugindesc v1.5.4 アイテム合成システム
  * @author フトコロ
  *
  * @param --基本設定--
@@ -123,9 +123,9 @@ FTKR.ICS = FTKR.ICS || {};
  * @default ["レシピから選ぶ"]
  * 
  * @param Slot Cmd Name
- * @desc 「アイテムを戻す」コマンドの表示内容を設定します。
+ * @desc 「合成素材を戻す」コマンドの表示内容を設定します。
  * @type string[]
- * @default ["アイテムを戻す"]
+ * @default ["合成素材を戻す"]
  * 
  * @param Action Cmd Name
  * @desc 「合成を行う」コマンドの表示内容を設定します。
@@ -213,7 +213,7 @@ FTKR.ICS = FTKR.ICS || {};
  * @param Slot Title Format
  * @desc スロットタイトルウィンドウのタイトル表示内容を設定します。
  * @type string[]
- * @default ["\\c[16]合成アイテム"]
+ * @default ["\\c[16]合成素材"]
  * 
  * @param Slot Title Opacity
  * @desc スロットタイトルウィンドウの透明率を指定します。
@@ -240,9 +240,9 @@ FTKR.ICS = FTKR.ICS || {};
  * @default 160
  * 
  * @param Return All Slot
- * @desc アイテムをすべて戻すコマンドの表示名を設定します。
+ * @desc 合成素材をすべて戻すコマンドの表示名を設定します。
  * @type string[]
- * @default ["アイテムをすべて戻す"]
+ * @default ["合成素材をすべて戻す"]
  * 
  * @param Slot Opacity
  * @desc 素材スロットウィンドウの透明率を指定します。
@@ -524,6 +524,10 @@ FTKR.ICS = FTKR.ICS || {};
  * 概要
  *-----------------------------------------------------------------------------
  * 本プラグインは、アイテム合成システムを実装するプラグインです。
+ * 
+ * 
+ * オンラインマニュアル
+ * https://github.com/futokoro/RPGMaker/blob/master/FTKR_ItemCompositionSystem.ja.md
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -930,6 +934,7 @@ FTKR.ICS = FTKR.ICS || {};
  *    :リスト番号を指定すると、合成画面の表示内容をプラグインパラメータで設定した
  *    :リストの番号のものに変更します。
  * 
+ * 
  * 2. レシピを追加
  * ICS_ADD_RECIPE ITEMNAME RecipeId
  * ICS_ADD_RECIPE ITEM ItemId RecipeId 
@@ -964,13 +969,26 @@ FTKR.ICS = FTKR.ICS || {};
  * 本プラグインはMITライセンスのもとで公開しています。
  * This plugin is released under the MIT License.
  * 
- * Copyright (c) 2017 Futokoro
+ * Copyright (c) 2017,2018 Futokoro
  * http://opensource.org/licenses/mit-license.php
+ * 
+ * 
+ * プラグイン公開元
+ * https://github.com/futokoro/RPGMaker/blob/master/README.md
  * 
  * 
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
+ * 
+ * v1.5.4 - 2018/07/12 : 他プラグインとの競合回避
+ *    1. Scene_ICSの継承元を、Scene_ItemからScene_ItemBaseに変更
+ *    2. Window_IcsItemListの継承元を、Window_ItemListからWindow_Selectableに変更
+ * 
+ * v1.5.3 - 2017/12/11 : 不具合修正、ヘルプ修正、他微修正
+ *    1. レシピを設定したアイテムにカテゴリーを設定しても、特定のカテゴリーの
+ *       アイテムだけ表示する合成コマンドの機能が反映されない不具合を修正。
+ *    2. プラグインパラメータの初期値を見直し。
  * 
  * v1.5.2 - 2017/11/01 : ヘルプ修正
  *    1. レシピの素材にカテゴリーを設定する場合の説明が間違っていたため修正。
@@ -1655,7 +1673,6 @@ function Game_IcsRecipeBook() {
                     if (category) obj.ics.setDataClass(category);
                 }
                 var datas = readEntrapmentCodeToTextEx(obj, ['ICS RECIPES', 'ICS レシピ']);
-                if(datas) console.log(datas);
                 this.setIcsRecipes(obj, datas);
             }
         }
@@ -2361,14 +2378,45 @@ function Game_IcsRecipeBook() {
         this.initialize.apply(this, arguments);
     }
 
-    Window_IcsItemList.prototype = Object.create(Window_ItemList.prototype);
+    Window_IcsItemList.prototype = Object.create(Window_Selectable.prototype);
     Window_IcsItemList.prototype.constructor = Window_IcsItemList;
 
     Window_IcsItemList.prototype.initialize = function(x, y, width, height) {
-        Window_ItemList.prototype.initialize.call(this, x, y, width, height);
+        Window_Selectable.prototype.initialize.call(this, x, y, width, height);
+        this._category = 'none';
+        this._data = [];
         this._itemCount = 0;
         this._typeId = [];
         this._showResipe = false;
+    };
+
+    Window_IcsItemList.prototype.setCategory = function(category) {
+        if (this._category !== category) {
+            this._category = category;
+            this.refresh();
+            this.resetScroll();
+        }
+    };
+
+    Window_IcsItemList.prototype.maxCols = function() {
+        return 2;
+    };
+
+    Window_IcsItemList.prototype.spacing = function() {
+        return 48;
+    };
+
+    Window_IcsItemList.prototype.maxItems = function() {
+        return this._data ? this._data.length : 1;
+    };
+
+    Window_IcsItemList.prototype.item = function() {
+        var index = this.index();
+        return this._data && index >= 0 ? this._data[index] : null;
+    };
+
+    Window_IcsItemList.prototype.isCurrentItemEnabled = function() {
+        return this.isEnabled(this.item());
     };
 
     Window_IcsItemList.prototype.standardBackOpacity = function() {
@@ -2387,11 +2435,39 @@ function Game_IcsRecipeBook() {
         return this._typeId[this.index()];
     };
 
+    Window_IcsItemList.prototype.includesBase = function(item) {
+        switch (this._category) {
+        case 'item':
+            return DataManager.isItem(item) && item.itypeId === 1;
+        case 'weapon':
+            return DataManager.isWeapon(item);
+        case 'armor':
+            return DataManager.isArmor(item);
+        case 'keyItem':
+            return DataManager.isItem(item) && item.itypeId === 2;
+        default:
+            return false;
+        }
+    };
+
     Window_IcsItemList.prototype.includes = function(item) {
         if (item && item.ics.category() === this._category) {
             return true;
         } else {
-            return Window_ItemList.prototype.includes.call(this, item);
+            return this.includesBase(item);
+        }
+    };
+
+    Window_IcsItemList.prototype.needsNumber = function() {
+        return true;
+    };
+  
+    Window_IcsItemList.prototype.makeItemListBase = function() {
+        this._data = $gameParty.allItems().filter(function(item) {
+            return this.includes(item);
+        }, this);
+        if (this.includes(null)) {
+            this._data.push(null);
         }
     };
 
@@ -2406,16 +2482,24 @@ function Game_IcsRecipeBook() {
                 this._data.push(null);
             }
         } else {
-            Window_ItemList.prototype.makeItemList.call(this);
+            this.makeItemListBase();
         }
+    };
+
+    Window_IcsItemList.prototype.selectLast = function() {
+        var index = this._data.indexOf($gameParty.lastItem());
+        this.select(index >= 0 ? index : 0);
     };
 
     Window_IcsItemList.prototype.filterCategory = function() {
         return $gameParty.recipes().filter(function(recipe) {
             if (!recipe) return false;
-            return DataManager.isIcsCategory(recipe.item()) ?
-                this._category === recipe.item().ics.dataClass() :
-                this._category === recipe.dataClass();
+            var item = recipe.item();
+            return DataManager.isIcsCategory(item) ?
+                this._category === item.ics.dataClass() :
+                item.ics.category() ?
+                    this._category === item.ics.category() :
+                    this._category === recipe.dataClass();
         }, this);
     };
 
@@ -2442,17 +2526,34 @@ function Game_IcsRecipeBook() {
         }
     };
 
+    Window_IcsItemList.prototype.numberWidth = function() {
+        return this.textWidth('000');
+    };
+
+    Window_IcsItemList.prototype.drawItemNumber = function(item, x, y, width) {
+        if (this.needsNumber()) {
+            this.drawText(':', x, y, width - this.textWidth('00'), 'right');
+            this.drawText($gameParty.numItems(item), x, y, width, 'right');
+        }
+    };
+
     Window_IcsItemList.prototype.setCompositioStateWindow = function(window) {
         this._compositionStateWindow = window;
         this.update();
     };
 
     Window_IcsItemList.prototype.update = function() {
-        Window_ItemList.prototype.update.call(this);
+        Window_Selectable.prototype.update.call(this);
         if (this._showResipe && this._compositionStateWindow) {
             var item = this._data[this._index];
             this._compositionStateWindow.setRecipe(item, this.typeId());
         }
+    };
+
+    Window_IcsItemList.prototype.refresh = function() {
+        this.makeItemList();
+        this.createContents();
+        this.drawAllItems();
     };
 
     //=============================================================================
@@ -3279,11 +3380,11 @@ function Game_IcsRecipeBook() {
         this.initialize.apply(this, arguments);
     }
 
-    Scene_ICS.prototype = Object.create(Scene_Item.prototype);
+    Scene_ICS.prototype = Object.create(Scene_ItemBase.prototype);
     Scene_ICS.prototype.constructor = Scene_ICS;
 
     Scene_ICS.prototype.initialize = function() {
-        Scene_Item.prototype.initialize.call(this);
+        Scene_ItemBase.prototype.initialize.call(this);
     };
 
     Scene_ICS.prototype.createBackground = function() {
@@ -3350,6 +3451,16 @@ function Game_IcsRecipeBook() {
         this._itemWindow.setHandler('cancel', this.onItemCancel.bind(this));
         this.addWindow(this._itemWindow);
         this._categoryWindow.setItemWindow(this._itemWindow);
+    };
+
+    Scene_ICS.prototype.onItemOk = function() {
+        $gameParty.setLastItem(this.item());
+        this.determineItem();
+    };
+
+    Scene_ICS.prototype.onItemCancel = function() {
+        this._itemWindow.deselect();
+        this._categoryWindow.activate();
     };
 
     Scene_ICS.prototype.createCompositionSlotTitleWindow = function() {
@@ -3751,22 +3862,18 @@ function Game_IcsRecipeBook() {
         var correct = {};
         switch(judg) {
             case 'success':
-                console.log(sound.success);
                 AudioManager.playStaticSe(sound.success.icsSoundType());
                 break;
             case 'great':
-                console.log(sound.great);
                 AudioManager.playStaticSe(sound.great.icsSoundType());
                 correct = this.successCorrection(recipe.great());
                 break;
             case 'failure':
-                console.log(sound.failure);
                 AudioManager.playStaticSe(sound.failure.icsSoundType());
                 correct = this.successCorrection(recipe.failure());
                 success = false;
                 break;
             default:
-                console.log(sound.lost);
                 AudioManager.playStaticSe(sound.lost.icsSoundType());
                 correct = this.successCorrection('なし');
                 success = false;
@@ -3918,7 +4025,6 @@ function Game_IcsRecipeBook() {
 
     Scene_ICS.prototype.onEndConfOk = function() {
         var cfw = this._stsEndConfWindow;
-        console.log(cfw.item());
         if (cfw.item().dicision) {
             cfw.deselect();
             this.onCompositionEnd();
