@@ -4,8 +4,8 @@
 // プラグインNo : 9
 // 作成者     : フトコロ
 // 作成日     : 2017/03/09
-// 最終更新日 : 2018/08/20
-// バージョン : v3.0.1
+// 最終更新日 : 2019/05/12
+// バージョン : v3.5.3
 //=============================================================================
 // GraphicalDesignMode.js
 // ----------------------------------------------------------------------------
@@ -22,7 +22,7 @@ FTKR.CSS = FTKR.CSS || {};
 
 //=============================================================================
 /*:
- * @plugindesc v3.0.1 アクターのステータス表示を変更するプラグイン
+ * @plugindesc v3.5.3 アクターのステータス表示を変更するプラグイン
  * @author フトコロ
  *
  * @noteParam CSS_画像
@@ -31,128 +31,291 @@ FTKR.CSS = FTKR.CSS || {};
  * @noteType file
  * @noteData actors
  * 
- * @param --顔画像の設定--
+ * @noteParam CSS_画像
+ * @noteRequire 1
+ * @noteDir img/pictures/
+ * @noteType file
+ * @noteData items
+ * 
+ * @noteParam CSS_画像
+ * @noteRequire 1
+ * @noteDir img/pictures/
+ * @noteType file
+ * @noteData weapons
+ * 
+ * @noteParam CSS_画像
+ * @noteRequire 1
+ * @noteDir img/pictures/
+ * @noteType file
+ * @noteData armors
+ * 
+ * @param face
+ * @text --顔画像の設定--
  * @default
  * 
  * @param Face Image Width
  * @desc アクターの顔画像幅を設定します
  * デフォルトは144
  * @default 144
+ * @parent face
  * 
  * @param Face Image Height
  * @desc アクターの顔画像高さを設定します
  * デフォルトは144
  * @default 144
+ * @parent face
  * 
  * @param Face Position X
  * @desc 顔画像を描画エリア内のどこに表示するか。
  * 0 - 左寄せ, 1 - 中央, 2 - 右寄せ
  * @default 1
+ * @parent face
  * 
- * @param --歩行キャラの設定--
+ * @param chara
+ * @text --歩行キャラの設定--
  * @default
  * 
  * @param Chara Image Width
  * @desc アクターの歩行キャラの画像幅を設定します
  * デフォルトは48
  * @default 48
+ * @parent chara
  * 
  * @param Chara Image Height
  * @desc アクターの歩行キャラの画像高さを設定します
  * デフォルトは48
  * @default 48
+ * @parent chara
  * 
  * @param Chara Position X
  * @desc アクターの歩行キャラを描画エリア内のどこに表示するか。
  * 0 - 左寄せ, 1 - 中央, 2 - 右寄せ
  * @default 1
+ * @parent chara
  * 
  * @param Chara Direction
  * @desc アクターの歩行キャラの向きを設定します。
  * 0 - 正面固定, 1 - マップ上の先頭プレイヤーの向き
  * @default 0
+ * @parent chara
  * 
- * @param --SVキャラの設定--
+ * @param sv
+ * @text --SVキャラの設定--
  * @default
  * 
  * @param Sv Image Width
  * @desc アクターのSVキャラの画像幅を設定します
  * デフォルトは64
  * @default 64
+ * @parent sv
  * 
  * @param Sv Image Height
  * @desc アクターのSvキャラの画像高さを設定します
  * デフォルトは64
  * @default 64
+ * @parent sv
  * 
  * @param Sv Position X
  * @desc アクターのSvキャラを描画エリア内のどこに表示するか。
  * 0 - 左寄せ, 1 - 中央, 2 - 右寄せ
  * @default 1
+ * @parent sv
  * 
  * @param Enabled Sv Motion
  * @desc Svキャラのモーションを有効にするか設定します
  * 0 - 無効にする, 1 - 常に有効にする, 2 - 戦闘時以外有効
  * @default 1
+ * @parent sv
  * 
  * @param Sv Image Motion
  * @desc Svキャラの標準モーションを設定します
  * @default wait
+ * @parent sv
  * 
  * @param Enabled State Motion
  * @desc ステートモーションを有効にするか設定します
  * 1 - 有効にする, 0 - 無効にする
  * @default 1
+ * @parent sv
  * 
- * @param --ステートの設定--
+ * @param state
+ * @text --ステートの設定--
  * @default
  * 
  * @param Enable CSS States
  * @desc ステートアイコンの表示を専用の描画処理に変えるか。
  * 1 - 有効にする, 0 - 無効にする
  * @default 1
+ * @parent state
  * 
  * @param Animation Wait
  * @desc ステートアイコンの切り替え時間を指定します
  * デフォルトは40
  * @default 40
+ * @parent state
  * 
  * @param Enable Overlap
  * @desc ステートアイコンの重なり表示を有効にする
  * 1 - 有効にする, 0 - 無効にする
  * @default 0
+ * @parent state
  * 
  * @param Overlap Rate
  * @desc アイコンの重なりを許容する比率を設定します。
  * @default 0.5
+ * @parent state
+ * 
+ * @param State Icon Padding
+ * @desc アイコン表示に必要な余白を指定します。
+ * @default 4
+ * @type number
+ * @min 0
+ * @parent state
  * 
  * @param Enable Auto Scale
- * @desc 行の高さに合わせてアイコンサイズを調整するか
+ * @desc 行の高さまたは表示幅に合わせてアイコンサイズを調整するか
  * 1 - 有効にする, 0 - 無効にする
  * @default 0
+ * @parent state
  * 
- * @param --装備パラメータの設定--
+ * @param pdiff
+ * @text --通常能力値(差分)の設定--
+ * @default
+ * 
+ * @param Enabled Escapecharacters By PDIFF
+ * @desc 差分表示に制御文字使えるようにする
+ * @type boolean
+ * @on 有効
+ * @off 無効
+ * @default true
+ * @parent pdiff
+ * 
+ * @param Format PDIFF Plus
+ * @desc 増加の場合の表示を設定します。
+ * %1 - 増加値
+ * @default \c[24]+ %1
+ * @parent pdiff
+ * 
+ * @param Format PDIFF Minus
+ * @desc 減少の場合の表示を設定します。
+ * %1 - 減少値
+ * @default \c[25]- %1
+ * @parent pdiff
+ * 
+ * @param xparam
+ * @text --能力値の設定--
+ * @default
+ * 
+ * @param Disp Decimals Param
+ * @desc 能力値が率で表されるパラメータの表示方法を選択します。
+ * @type select
+ * @option 少数で表示
+ * @value 0
+ * @option パーセント(%)で表示
+ * @value 1
+ * @default 0
+ * @parent xparam
+ * 
+ * @param equip
+ * @text --装備パラメータの設定--
  * @default
  * 
  * @param Equip Right Arrow
  * @desc 装備を変える時に表示する右矢印記号を指定します。
  * @default \c[16]→
+ * @parent equip
  * 
- * @param --カスタム画像の設定--
+ * @param ediff
+ * @text --装備パラメータ(差分)の設定--
+ * @default
+ * 
+ * @param Enabled Escapecharacters By EDIFF
+ * @desc 差分表示に制御文字使えるようにする
+ * @type boolean
+ * @on 有効
+ * @off 無効
+ * @default true
+ * @parent ediff
+ * 
+ * @param Format EDIFF Plus
+ * @desc 増加の場合の表示を設定します。
+ * %1 - 増加値
+ * @default \c[24]+ %1
+ * @parent ediff
+ * 
+ * @param Format EDIFF Minus
+ * @desc 減少の場合の表示を設定します。
+ * %1 - 減少値
+ * @default \c[25]- %1
+ * @parent ediff
+ * 
+ * @param aopdiff
+ * @text --AOP能力値(差分)の設定--
+ * @default
+ * 
+ * @param Enabled Escapecharacters By AOPDIFF
+ * @desc 差分表示に制御文字使えるようにする
+ * @type boolean
+ * @on 有効
+ * @off 無効
+ * @default true
+ * @parent aopdiff
+ * 
+ * @param Format AOPDIFF Plus
+ * @desc 増加の場合の表示を設定します。
+ * %1 - 増加値
+ * @default \c[24]+ %1
+ * @parent aopdiff
+ * 
+ * @param Format AOPDIFF Minus
+ * @desc 減少の場合の表示を設定します。
+ * %1 - 減少値
+ * @default \c[25]- %1
+ * @parent aopdiff
+ * 
+ * @param ediffaop
+ * @text --AOP装備パラメータ(差分)の設定--
+ * @default
+ * 
+ * @param Enabled Escapecharacters By EDIFFAOP
+ * @desc 差分表示に制御文字使えるようにする
+ * @type boolean
+ * @on 有効
+ * @off 無効
+ * @default true
+ * @parent ediffaop
+ * 
+ * @param Format EDIFFAOP Plus
+ * @desc 増加の場合の表示を設定します。
+ * %1 - 増加値
+ * @default \c[24]+ %1
+ * @parent ediffaop
+ * 
+ * @param Format EDIFFAOP Minus
+ * @desc 減少の場合の表示を設定します。
+ * %1 - 減少値
+ * @default \c[25]- %1
+ * @parent ediffaop
+ * 
+ * @param image
+ * @text --カスタム画像の設定--
  * @default
  * 
  * @param Image Position X
  * @desc カスタム画像を描画エリア内のどこに表示するか。
  * 0 - 左寄せ, 1 - 中央, 2 - 右寄せ
  * @default 1
+ * @parent image
  * 
- * @param --メッセージの設定--
+ * @param message
+ * @text --メッセージの設定--
  * @default
  * 
  * @param Display LevelUp Message
  * @desc レベルアップ時のメッセージを設定します。
  * %1 - アクター名, %2 - 現在レベル, %3 - 上昇したレベル
  * @default \C[17]%3 Level Up!
+ * @parent message
  * 
  * @param customParam
  * @text --カスタムパラメータの設定--
@@ -935,6 +1098,21 @@ FTKR.CSS = FTKR.CSS || {};
  * @default 
  * @parent customGauge
  * 
+ * @param paramName
+ * @text --表示名の設定--
+ * 
+ * @param XPARAM Name
+ * @desc 追加能力値の表示名を設定します。
+ * @type struct<xparam>
+ * @default {"hit":"命中率","eva":"回避率","cri":"会心率","cev":"会心回避率","mev":"魔法回避率","mrf":"魔法反射率","cnt":"反撃率","hrg":"HP再生率","mrg":"MP再生率","trg":"TP再生率"}
+ * @parent paramName
+ * 
+ * @param SPARAM Name
+ * @desc 特殊能力値の表示名を設定します。
+ * @type struct<sparam>
+ * @default {"tgr":"狙われ率","grd":"防御効果率","rec":"回復効果率","pha":"薬の知識","mcr":"MP消費率","tcr":"TPチャージ率","pdr":"物理ダメージ率","mdr":"魔法ダメージ率","fdr":"床ダメージ率","exr":"経験獲得率"}
+ * @parent paramName
+ * 
  * @help
  *-----------------------------------------------------------------------------
  * 概要
@@ -946,8 +1124,8 @@ FTKR.CSS = FTKR.CSS || {};
  * メニュー画面や、バトル画面などさまざまなステータス画面を設定できるように
  * なります。
  * 
- * v3.0.0から採用するステータスごとの表示位置指定方式については、拡張プラグインの
- * v2.0.0以降を使用してください。
+ * このプラグインの v3.0.0 から採用するステータスごとの表示位置指定方式については、
+ * 拡張プラグインの v2.0.0 以降を使用してください。
  * ※従来の方式についても、v1の拡張プラグインで使用可能
  * 
  * 
@@ -987,6 +1165,81 @@ FTKR.CSS = FTKR.CSS || {};
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
+ * 
+ * v3.5.3 - 2019/05/12 : 機能追加
+ *    1. アイテムの所持数を表示するコード(numItem)を追加。
+ *    2. 装備品の表示コード(equip(%1))に、ショップ画面用の専用処理を追加。
+ * 
+ * v3.5.2 - 2019/04/14 : 機能追加
+ *    1. 特殊能力値(xparam)と追加能力値(sparam)を表示するコード他を追加。
+ * 
+ * v3.5.1 - 2019/03/05 : 不具合修正、機能追加
+ *    1. 拡張プラグインのパラメータ"statusList"の"value"の値を正しく読み取れない
+ *       不具合を修正。
+ *    2. 選択中の装備品を装備できない時に特定も文字を表示させるコード notequip を
+ *       追加。※装備画面とショップ画面で使用可能
+ * 
+ * v3.5.0 - 2018/12/29 : 機能追加
+ *    1. セーブしたウィンドウ設定を変更するプラグインコマンドを追加。
+ * 
+ * v3.4.7 - 2018/12/27 : 不具合修正
+ *    1. FTKR_CSS_ShopStatus v2.2.2 の不具合修正対応。
+ *    2. FTKR_OriginalSceneWindow でアイテムデータ画像が表示できない不具合対応。
+ * 
+ * v3.4.6 - 2018/12/15 : 不具合修正(軽量化)
+ *    1. カスタムパラメータとカスタムゲージの表示処理を見直し。
+ *    2. プラグインコマンドの判定処理を見直し。
+ * 
+ * v3.4.5 - 2018/12/13 : 不具合修正(軽量化)
+ *    1. code(x)の形のパラメータの判定時に必ずeval()で評価していた処理を見直し。
+ * 
+ * v3.4.4 - 2018/12/02 : 不具合修正
+ *    1. カスタム画像で、存在しない画像IDを指定した場合にエラーになる不具合を修正。
+ * 
+ * v3.4.3 - 2018/11/03 : 仕様変更
+ *    1. ediff(x)、aopdiff(x)、ediffaop(x)の表示内容の設定を、pdiff(x)から独立。
+ * 
+ * v3.4.2 - 2018/10/28 : 不具合修正
+ *    1. オリジナルパラメータおよびオリジナルゲージの数値が、一部のシーンで正常に
+ *       表示できない不具合を修正。
+ * 
+ * v3.4.1 - 2018/10/11 : 機能追加、仕様変更
+ *    1. パラメータの差分表示に制御文字を無効にする機能を追加。
+ *    2. パラメータの差分表示で 0 の場合に表示しないように変更。
+ * 
+ * v3.4.0 - 2018/10/10 : 機能追加
+ *    1. ediff(x)およびediffaop(x)のコードをFTKR_CSS_ShopStatusから移動。
+ * 
+ * v3.3.4 - 2018/09/28 : 機能追加
+ *    1. ステータスコードに、AOPパラメータ表示用のコードを追加。
+ * 
+ * v3.3.3 - 2018/09/28 : 機能追加
+ *    1. ステータスコードに、パラメータ表示用のコードを追加。
+ * 
+ * v3.3.2 - 2018/09/19 : 機能追加
+ *    1. ステータスコードに、アイテム用のコードを追加。
+ * 
+ * v3.3.1 - 2018/09/19 : 不具合修正
+ *    1. 戦闘不能時に、ステートアイコンを表示しない不具合を修正。
+ * 
+ * v3.3.0 - 2018/09/15 : 機能追加
+ *    1. ステータスコードに、アイテム用のコードを追加。
+ *    2. ステータスアイコン同士間の余白サイズを設定する機能を追加。
+ *    3. ステータスアイコンを高さ幅が不足しても最低１つは表示させるように変更。
+ *    4. プラグインパラメータ Enable Auto Scale を有効にした場合に、表示幅が小さい
+ *       場合でもサイズ調整するように変更。
+ * 
+ * v3.2.0 - 2018/09/11 : FTKR_GDM_WindowEditor.js 用の記述を修正。
+ * 
+ * v3.1.1 - 2018/09/09 : GraphicalDesignMode.js 用の記述を削除
+ * 
+ * v3.1.0 - 2018/08/30 : 機能追加
+ *    1. 拡張プラグインのプラグインパラメータで表示するステータスをリストで
+ *       選択できる機能を追加。
+ * 
+ * v3.0.2 - 2018/08/25 : 不具合修正
+ *    1. 拡張プラグインで、余白と背景透明度を 0 に設定した場合に、設定が無効になる
+ *       不具合を修正。
  * 
  * v3.0.1 - 2018/08/20 : 不具合修正
  *    1. 拡張プラグインでステータスウィンドウの設定を有効にした場合にエラーになる
@@ -1202,8 +1455,238 @@ FTKR.CSS = FTKR.CSS || {};
  *-----------------------------------------------------------------------------
  */
 //=============================================================================
+/*~struct~status:
+ * @param text
+ * @desc 表示するステータスを選択
+ * リストにない場合は、直接テキストで記述
+ * @default 
+ * @type select
+ * @option 名前
+ * @value name
+ * @option 二つ名
+ * @value nickname
+ * @option 職業
+ * @value class
+ * @option レベル
+ * @value level
+ * @option HP
+ * @value hp
+ * @option MP
+ * @value mp
+ * @option TP
+ * @value tp
+ * @option 顔画像
+ * @value face
+ * @option 顔画像(サイズ指定)
+ * @value face(%1)
+ * @option 歩行キャラ画像
+ * @value chara
+ * @option SV戦闘キャラ画像
+ * @value sv
+ * @option ステート(横)
+ * @value state
+ * @option ステート(縦)
+ * @value state2(%1)
+ * @option プロフィール
+ * @value profile
+ * @option 通常能力値
+ * @value param(%1)
+ * @option 通常能力値(素)
+ * @value pbase(%1)
+ * @option 通常能力値(増加分)
+ * @value pdiff(%1)
+ * @option 追加能力値
+ * @value xparam(%1)
+ * @option 特殊能力値
+ * @value sparam(%1)
+ * @option 装備
+ * @value equip(%1)
+ * @option 装備通常能力値
+ * @value eparam(%1)
+ * @option 装備追加能力値
+ * @value exparam(%1)
+ * @option 装備特殊能力値
+ * @value esparam(%1)
+ * @option 装備通常能力値差分
+ * @value ediff(%1)
+ * @option 装備追加能力値差分
+ * @value exdiff(%1)
+ * @option 装備特殊能力値差分
+ * @value esdiff(%1)
+ * @option 装備不可表示
+ * @value notequip(%1)
+ * @option カスタムパラメータ
+ * @value custom(%1)
+ * @option カスタムゲージ
+ * @value gauge(%1)
+ * @option アクター別カスタムゲージ
+ * @value agauge(%1)
+ * @option クラス別カスタムゲージ
+ * @value cgauge(%1)
+ * @option カスタム画像
+ * @value image
+ * @option カスタム画像(登録ID)
+ * @value image(%1)
+ * @option メッセージ
+ * @value message
+ * @option テキスト
+ * @value text(%1)
+ * @option JS計算式(数値表示)
+ * @value eval(%1)
+ * @option JS計算式(文字列表示)
+ * @value streval(%1)
+ * @option 横線
+ * @value line
+ * @option AOP能力値
+ * @value aop(%1)
+ * @option AOP能力値(素)
+ * @value aopbase(%1)
+ * @option AOP能力値(増加分)
+ * @value aopdiff(%1)
+ * @option AOP装備パラメータ
+ * @value eaop(%1)
+ * @option AOP装備パラメータ差分
+ * @value ediffaop(%1)
+ * @option アイテム名
+ * @value iname
+ * @option アイテムアイコン
+ * @value iicon
+ * @option アイテム説明
+ * @value idesc
+ * @option アイテムタイプ
+ * @value itype
+ * @option アイテム装備タイプ
+ * @value ietype
+ * @option アイテム範囲
+ * @value iscope
+ * @option アイテム属性
+ * @value ielement
+ * @option アイテム設定詳細
+ * @value iparam(%1)
+ * @option アイテムカスタム画像
+ * @value iimage(%1)
+ * @option アイテム所持数
+ * @value inumber
+ * @option マップ名
+ * @value mapname
+ *
+ * @param value
+ * @desc code(%1)の形式で設定するステータスの%1の内容を入力
+ * @default 
+ * 
+ * @param x
+ * @desc 表示するX座標
+ * @default 0
+ *
+ * @param y
+ * @desc 表示するY座標
+ * @default 0
+ *
+ * @param width
+ * @desc 表示する幅
+ * @default 0
+ *
+ */
+/*~struct~xparam:
+ *
+ * @param hit
+ * @desc 命中率の表示名
+ * @default 命中率
+ *
+ * @param eva
+ * @desc 回避率の表示名
+ * @default 回避率
+ *
+ * @param cri
+ * @desc 会心率の表示名
+ * @default 会心率
+ *
+ * @param cev
+ * @desc 会心回避率の表示名
+ * @default 会心回避率
+ *
+ * @param mev
+ * @desc 魔法回避率の表示名
+ * @default 魔法回避率
+ *
+ * @param mrf
+ * @desc 魔法反射率の表示名
+ * @default 魔法反射率
+ *
+ * @param cnt
+ * @desc 反撃率の表示名
+ * @default 反撃率
+ *
+ * @param hrg
+ * @desc HP再生率の表示名
+ * @default HP再生率
+ *
+ * @param mrg
+ * @desc MP再生率の表示名
+ * @default MP再生率
+ *
+ * @param trg
+ * @desc TP再生率の表示名
+ * @default TP再生率
+ *
+ */
+/*~struct~sparam:
+ *
+ * @param tgr
+ * @desc 狙われ率の表示名
+ * @default 狙われ率
+ *
+ * @param grd
+ * @desc 防御効果率の表示名
+ * @default 防御効果率
+ *
+ * @param rec
+ * @desc 回復効果率の表示名
+ * @default 回復効果率
+ *
+ * @param pha
+ * @desc 薬の知識の表示名
+ * @default 薬の知識
+ *
+ * @param mcr
+ * @desc MP消費率の表示名
+ * @default MP消費率
+ *
+ * @param tcr
+ * @desc TPチャージ率の表示名
+ * @default TPチャージ率
+ *
+ * @param pdr
+ * @desc 物理ダメージ率の表示名
+ * @default 物理ダメージ率
+ *
+ * @param mdr
+ * @desc 魔法ダメージ率の表示名
+ * @default 魔法ダメージ率
+ *
+ * @param fdr
+ * @desc 床ダメージ率の表示名
+ * @default 床ダメージ率
+ *
+ * @param exr
+ * @desc 経験獲得率の表示名
+ * @default 経験獲得率
+ *
+ */
 
 (function() {
+
+    var paramParse = function(obj) {
+        return JSON.parse(JSON.stringify(obj, paramReplace));
+    };
+
+    var paramReplace = function(key, value) {
+        try {
+            return JSON.parse(value || null);
+        } catch (e) {
+            return value;
+        }
+    };
 
     //=============================================================================
     // プラグイン パラメータ
@@ -1232,14 +1715,38 @@ FTKR.CSS = FTKR.CSS || {};
             posiX:Number(parameters['Sv Position X'] || 0),
         },
         state:{
-            enable:Number(parameters['Enable CSS States'] || 0),
-            wait:Number(parameters['Animation Wait'] || 0),
-            overlap:Number(parameters['Enable Overlap'] || 0),
-            autoScale:Number(parameters['Enable Auto Scale'] || 0),
-            rate:Number(parameters['Overlap Rate'] || 0),
+            enable      :Number(parameters['Enable CSS States'] || 0),
+            wait        :Number(parameters['Animation Wait'] || 0),
+            overlap     :Number(parameters['Enable Overlap'] || 0),
+            autoScale   :Number(parameters['Enable Auto Scale'] || 0),
+            rate        :Number(parameters['Overlap Rate'] || 0),
+            iconPadding :Number(parameters['State Icon Padding'] || 0),
+        },
+        param:{
+            decimals    :paramParse(parameters['Disp Decimals Param']),
+        },
+        pdiff:{
+            plus        :paramParse(parameters['Format PDIFF Plus']),
+            minus       :paramParse(parameters['Format PDIFF Minus']),
+            enabledEc   :paramParse(parameters['Enabled Escapecharacters By PDIFF']),
         },
         equip:{
             arrow:String(parameters['Equip Right Arrow'] || ''),
+        },
+        ediff:{
+            plus        :paramParse(parameters['Format EDIFF Plus']),
+            minus       :paramParse(parameters['Format EDIFF Minus']),
+            enabledEc   :paramParse(parameters['Enabled Escapecharacters By EDIFF']),
+        },
+        aopdiff:{
+            plus        :paramParse(parameters['Format AOPDIFF Plus']),
+            minus       :paramParse(parameters['Format AOPDIFF Minus']),
+            enabledEc   :paramParse(parameters['Enabled Escapecharacters By AOPDIFF']),
+        },
+        ediffaop:{
+            plus        :paramParse(parameters['Format EDIFFAOP Plus']),
+            minus       :paramParse(parameters['Format EDIFFAOP Minus']),
+            enabledEc   :paramParse(parameters['Enabled Escapecharacters By EDIFFAOP']),
         },
         gauge:{
             digit :Number(parameters['Gauge Param Digit'] || 0),
@@ -1376,6 +1883,21 @@ FTKR.CSS = FTKR.CSS || {};
         ],
     };
 
+    var xparamName = paramParse(parameters['XPARAM Name']);
+    if (xparamName) {
+        FTKR.CSS.cssStatus.xparam = Object.entries(xparamName).map(function(obj){return obj[1];});
+    } else {
+        console.error('プラグインパラメータ XPARAM Name が設定されていません。');
+        return;
+    }
+    var sparamName = paramParse(parameters['SPARAM Name']);
+    if (sparamName) {
+        FTKR.CSS.cssStatus.sparam = Object.entries(sparamName).map(function(obj){return obj[1];});
+    } else {
+        console.error('プラグインパラメータ SPARAM Name が設定されていません。');
+        return;
+    }
+
     //SV戦闘キャラ用の影画像の高さ
     Window_Base.SV_SHADOW_HEIGHT = 48;
 
@@ -1445,6 +1967,7 @@ FTKR.CSS = FTKR.CSS || {};
     // 自作処理
     //=============================================================================
 
+    // <codeTitle:id>text</codeTitle>の形式のメタデータを読み取って{id,text}を返す
     var readEntrapmentCodeToTextEx = function(obj, codeTitles) {
         var regs = convertEntrapmentRegArrayEx(codeTitles);
         var notedata = obj.note.split(/[\r\n]+/);
@@ -1484,27 +2007,6 @@ FTKR.CSS = FTKR.CSS || {};
         });
     };
 
-    var convertTextWidth = function(text) {
-        var tw = 0;
-        var window = SceneManager._scene._windowLayer.children[0];
-        if (!window) return tw;
-        var conv = window.convertEscapeCharacters(text);
-        var reg = /i\[(\d+)\]/i
-        while (reg.test(conv)) {
-            conv = (conv.toUpperCase()).replace(reg, '');
-            tw += Window_Base._iconWidth + 4;
-        }
-        if (/c\[(\d+)\]/i.test(conv)) {
-            conv = (conv.toUpperCase()).replace(/c\[(\d+)\]/ig, '');
-        }
-        if (conv.match(/lw\[(\d+),?([^\]]+)\]/i)) {
-            tw += RegExp.$1;
-            conv = (conv.toUpperCase()).replace(/lw\[(\d+),?([^\]]+)\]/ig, '');
-        }
-        tw += window.textWidth(conv);
-        return tw;
-    };
-
     var convertEscapeCharacters = function(text) {
         if (text == null) text = '';
         var window = SceneManager._scene._windowLayer.children[0];
@@ -1523,41 +2025,6 @@ FTKR.CSS = FTKR.CSS || {};
         }
     };
 
-    //配列を複製する
-    var copyArray = function(arr) {
-        var newArr = [];
-        arr.forEach(function(data, prop) {
-            if (data instanceof Object) {
-                if (data instanceof Array) {
-                    newArr[prop] = copyArray(data);
-                } else {
-                    newArr[prop] = copyObject(data);
-                }
-            } else {
-                newArr[prop] = data;
-            }
-        });
-        return newArr;
-    };
-
-    //オブジェクトを複製する
-    var copyObject = function(obj) {
-        var newObj = {};
-        Object.getOwnPropertyNames(obj).forEach(function(prop) {
-            var data = obj[prop];
-            if (data instanceof Object) {
-                if (data instanceof Array) {
-                    newObj[prop] = copyArray(data);
-                } else {
-                    newObj[prop] = copyObject(data);
-                }
-            } else {
-                newObj[prop] = data;
-            }
-        });
-        return newObj;
-    };
-    
     // 配列の要素の合計
     Math.sam = function(arr) {
         return arr.reduce( function(prev, current, i, arr) {
@@ -1603,9 +2070,9 @@ FTKR.CSS = FTKR.CSS || {};
     // バトル終了後に、逃走フラグを削除
     //=============================================================================
 
-    FTKR.CSS.Scene_Map_start = Scene_Map.prototype.start;
+    var _Scene_Map_start = Scene_Map.prototype.start;
     Scene_Map.prototype.start = function() {
-        FTKR.CSS.Scene_Map_start.call(this);
+        _Scene_Map_start.call(this);
         BattleManager._escaped = false;
     };
 
@@ -1613,15 +2080,18 @@ FTKR.CSS = FTKR.CSS || {};
     // DataManager
     //=============================================================================
 
-    FTKR.CSS.DatabaseLoaded = false;
-    FTKR.CSS.DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
+    var _DatabaseLoaded = false;
+    var _DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
     DataManager.isDatabaseLoaded = function() {
-        if (!FTKR.CSS.DataManager_isDatabaseLoaded.call(this)) return false;
-        if (!FTKR.CSS.DatabaseLoaded) {
+        if (!_DataManager_isDatabaseLoaded.call(this)) return false;
+        if (!_DatabaseLoaded) {
             this.cssActorImageNotetags($dataActors);
+            this.cssActorImageNotetags($dataItems);
+            this.cssActorImageNotetags($dataWeapons);
+            this.cssActorImageNotetags($dataArmors);
             this.cssCustomParamNotetags($dataActors);
             this.cssCustomParamNotetags($dataClasses);
-            FTKR.CSS.DatabaseLoaded = true;
+            _DatabaseLoaded = true;
         }
         return true;
     };
@@ -1631,7 +2101,7 @@ FTKR.CSS = FTKR.CSS || {};
             var obj = group[n];
             obj.cssbgi = [];
             var datas = readEntrapmentCodeToTextEx(obj, ['CSS_画像', 'CSS_IMAGE']);
-            this.readCssBgiMetaDatas(obj, datas);
+            if (datas.length) this.readCssBgiMetaDatas(obj, datas);
         }
     };
 
@@ -1728,34 +2198,101 @@ FTKR.CSS = FTKR.CSS || {};
 
     var _CSS_Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
     Game_Interpreter.prototype.pluginCommand = function(command, args) {
-        _CSS_Game_Interpreter_pluginCommand.call(this, command, args);
-        if (!command.match(/CSS_(.+)/i)) return;
-        command = (RegExp.$1 + '').toUpperCase();
-        switch (command) {
-            case 'カスタム画像変更':
-            case 'CHANGE_CUSTOM_IMAGE':
-                switch (setArgStr(args[0]).toUpperCase()) {
-                    case 'アクター':
-                    case 'ACTOR':
-                        var actor = $gameActors.actor(setArgNum(args[1]));
-                        break;
-                    case 'パーティー':
-                    case 'PARTY':
-                        var actor = $gameParty.members()[setArgNum(args[1])];
-                        break;
-                    default : 
-                        return;
-                }
-                if (!actor) break;
-                actor.setupCssbgi(
-                    setArgNum(args[2]),
-                    setArgStr(args[3]),
-                    setArgNum(args[4]),
-                    setArgNum(args[5]),
-                    setArgNum(args[6]),
-                    setArgNum(args[7]),
-                    setArgNum(args[8])
-                );
+        switch (command.toUpperCase()) {
+            case 'CSS_カスタム画像変更':
+            case 'CSS_CHANGE_CUSTOM_IMAGE':
+                this.cssChangeCustomImage(args);
+                break;
+            case 'CSS_ウィンドウ設定変更':
+            case 'CSS_CHANGE_WINDOW_SETTING':
+                this.cssChangeWindowSetting(args);
+                break;
+            default:
+                _CSS_Game_Interpreter_pluginCommand.call(this, command, args);
+                break;
+        }
+    };
+
+    Game_Interpreter.prototype.cssChangeCustomImage = function(args) {
+        switch (setArgStr(args[0]).toUpperCase()) {
+            case 'アクター':
+            case 'ACTOR':
+                var actor = $gameActors.actor(setArgNum(args[1]));
+                break;
+            case 'パーティー':
+            case 'PARTY':
+                var actor = $gameParty.members()[setArgNum(args[1])];
+                break;
+            default : 
+                return;
+        }
+        if (!actor) return;
+        actor.setupCssbgi(
+            setArgNum(args[2]),
+            setArgStr(args[3]),
+            setArgNum(args[4]),
+            setArgNum(args[5]),
+            setArgNum(args[6]),
+            setArgNum(args[7]),
+            setArgNum(args[8])
+        );
+    };
+
+    Game_Interpreter.prototype.cssChangeWindowSetting = function(args) {
+        switch(setArgStr(args[0].toUpperCase())) {
+            case 'バトル':
+            case 'BATTLE':
+                this.cssChangeWindowSettingParam($gameSystem._cssBattleWindow, args);
+                return;
+            default:
+                return;
+        }
+    };
+
+    Game_Interpreter.prototype.cssChangeWindowSettingParam = function(param, args) {
+        if (!param) return;
+        switch(setArgStr(args[1].toUpperCase())) {
+            case 'ENABLED':
+            case 'カスタム機能':
+                param.enabled = Boolean(setArgStr(args[2]));
+                break;
+            case 'NUMVISIBLEROUS':
+            case '表示行数':
+                param.numVisibleRows = setArgNum(args[2]);
+                break;
+            case 'FONTSIZE':
+            case 'フォントサイズ':
+                param.fontSize = setArgNum(args[2]);
+                break;
+            case 'PADDING':
+            case '余白':
+                param.padding = setArgNum(args[2]);
+                break;
+            case 'LINEHEIGHT':
+            case '行高さ':
+                param.lineHeight = setArgNum(args[2]);
+                break;
+            case 'OPACITY':
+            case '背景透明度':
+                param.opacity = setArgNum(args[2]);
+                break;
+            case 'HIDEFRAME':
+            case '枠非表示':
+                param.hideFrame = Boolean(setArgStr(args[2]));
+                break;
+            case 'MAXCOLS':
+            case '表示列数':
+                param.maxCols = setArgNum(args[2]);
+                break;
+            case 'CURSORHEIGHT':
+            case 'カーソル行数':
+                param.cursorHeight = setArgNum(args[2]);
+                break;
+            case 'HSPACE':
+            case '表示行間隔':
+                param.hspace = setArgNum(args[2]);
+                break;
+            default:
                 break;
         }
     };
@@ -1764,16 +2301,16 @@ FTKR.CSS = FTKR.CSS || {};
     // Game_Actor
     //=============================================================================
 
-    FTKR.CSS.Game_Actor_levelUp = Game_Actor.prototype.levelUp;
+    var _Game_Actor_levelUp = Game_Actor.prototype.levelUp;
     Game_Actor.prototype.levelUp = function() {
-        FTKR.CSS.Game_Actor_levelUp.call(this);
+        _Game_Actor_levelUp.call(this);
         if (!this._levelUpCount) this._levelUpCount = 0;
         this._levelUpCount += 1;
     };
 
-    FTKR.CSS.Game_Actor_setup = Game_Actor.prototype.setup;
+    var _Game_Actor_setup = Game_Actor.prototype.setup;
     Game_Actor.prototype.setup = function(actorId) {
-        FTKR.CSS.Game_Actor_setup.call(this, actorId);
+        _Game_Actor_setup.call(this, actorId);
         ImageManager.loadFace(this.faceName());
         this.actor().cssbgi.forEach( function(bgi){
             if (bgi) ImageManager.loadPicture(bgi.name);
@@ -1819,9 +2356,9 @@ FTKR.CSS = FTKR.CSS || {};
     // Window_Base
     //=============================================================================
 
-    FTKR.CSS.Window_Base_initialize = Window_Base.prototype.initialize;
+    var _Window_Base_initialize = Window_Base.prototype.initialize;
     Window_Base.prototype.initialize = function(x, y, width, height) {
-        FTKR.CSS.Window_Base_initialize.call(this, x, y, width, height);
+        _Window_Base_initialize.call(this, x, y, width, height);
         this.sprite = [];
         this._stateIconSprite = [];
         this._faceSprite = [];
@@ -1852,6 +2389,14 @@ FTKR.CSS = FTKR.CSS || {};
         return this.maxPageItems ? this.maxPageItems() : 1;
     };
 
+    Window_Base.prototype.convertCssNumber = function(actor, value) {
+        if (!value) return 0;
+        if (!isNaN(value)) {
+            return Number(value);
+        }
+        return Number(this.evalCssCustomFormula(actor, value));
+    };
+
     Window_Base.prototype.evalCssCustomFormula = function(actor, formula) {
         if (!formula) return '';
         FTKR.setGameData(actor);
@@ -1866,6 +2411,34 @@ FTKR.CSS = FTKR.CSS || {};
 
     Window_Base.prototype.isEnabledChangePaintOpacity = function(actor) {
         return actor && actor.isBattleMember();
+    };
+
+    //制御文字を考慮して入力したテキスト長を求める
+    Window_Base.prototype.convertTextWidth = function(text) {
+        var textObj = { text : text, width : 0 };
+        textObj.text = this.convertEscapeCharacters(textObj.text);
+        this.convertEscapeCharactersTextWidth(textObj);
+        textObj.width += this.textWidth(textObj.text);
+        return textObj.width;
+    };
+
+    Window_Base.prototype.convertEscapeCharactersTextWidth = function(obj) {
+        var reg = /i\[(\d+)\]/i;
+        while (reg.test(obj.text)) {
+            obj.text = (conv.toUpperCase()).replace(reg, '');
+            obj.width += Window_Base._iconWidth + 4;
+        }
+        reg = /c\[(\d+)\]/i;
+        while (reg.test(obj.text)) {
+            obj.text = (obj.text.toUpperCase()).replace(reg, '');
+        }
+        reg = /lw\[(\d+),?([^\]]+)\]/i;
+        var result;
+        while (result = reg.exec(obj.text)) {
+            obj.width += Number(result[1]);
+            obj.text = (obj.text.toUpperCase()).replace(reg, '');
+        }
+        return obj;
     };
 
     /*-------------------------------------------------------------
@@ -1924,14 +2497,18 @@ FTKR.CSS = FTKR.CSS || {};
             var dy = this.parseIntCssStatus(status.y, x, y, width, height);
             var dw = this.parseIntCssStatus(status.width, x, y, width, height);
             dw = dw < 0 ? width - x - dx : Math.min(dw, width);
-            this.drawCssActorStatusBases(index, actor, x + dx, y + dy, dw, status.text, lss);
+            var text = status.text;
+            if (/([^\(]+)\(\%1\)/i.test(status.text)) {
+                text = text.format(status.value);
+            }
+            this.drawCssActorStatusBases(index, actor, x + dx, y + dy, dw, text, lss);
         } else {
             this.drawCssActorStatusText_v2(index, actor, x, y, width, height, status, lss);
         }
     };
 
     Window_Base.prototype.parseIntCssStatus = function(value, x, y, width, height) {
-        if (parseInt(value)) {
+        if (!isNaN(value)) {
             return parseInt(value);
         } else {
             var line = this.lineHeight();
@@ -1949,7 +2526,8 @@ FTKR.CSS = FTKR.CSS || {};
 
     Window_Base.prototype.drawCssActorStatusBases = function(index, actor, x, y, width, status, lss) {
         if (lss && lss.statusList) {
-            var statuses = status.match(/^\[(.+)\]$/i) ? RegExp.$1.split('/') : [status];
+            var match = status.match(/^\[(.+)\]$/);
+            var statuses = !match ? [status] : match[1].split('/');
             var len = statuses.length;
             var sIn = Number(lss.spaceIn);
             if (len > 1) width = (width - sIn * (len - 1))/ len;
@@ -1963,11 +2541,13 @@ FTKR.CSS = FTKR.CSS || {};
     };
 
     Window_Base.prototype.drawCssActorStatusBases_v2 = function(index, actor, x, y, width, status, lss) {
-        if (status.match(/^\{(.+)\}$/i)) {
-            status = RegExp.$1;
+        var matchA = status.match(/^\{(.+)\}$/);
+        if (matchA) {
+            status = matchA[1];
             width = this._dispWidth;
         }
-        var statuses = status.match(/^\[(.+)\]$/i) ? RegExp.$1.split('/') : [status];
+        var matchB = status.match(/^\[(.+)\]$/);
+        var statuses = !matchB ? [status] : matchB[1].split('/');
         var line = 0;
         var len = statuses.length;
         var sIn = Number(lss.spaceIn);
@@ -1992,11 +2572,10 @@ FTKR.CSS = FTKR.CSS || {};
     -------------------------------------------------------------*/
     Window_Base.prototype.drawCssActorStatusBase = function(index, actor, x, y, width, status, lss) {
         var css = FTKR.CSS.cssStatus;
-        var match = /([^\(]+)\((.+)\)/.exec(status);
+        var match = status.match(/([^\(]+)\((.+)\)/);
         if (match) {
             return this.drawCssActorStatusBase_A(index, actor, x, y, width, match, lss, css);
         } else {
-            if (!actor) return 1;
             return this.drawCssActorStatusBase_B(index, actor, x, y, width, status, lss, css);
         }
     };
@@ -2004,15 +2583,22 @@ FTKR.CSS = FTKR.CSS || {};
     // 括弧で表示する内容を指定する表示コード
     Window_Base.prototype.drawCssActorStatusBase_A = function(index, actor, x, y, width, match, lss, css) {
         switch(match[1].toUpperCase()) {
+            case 'IPARAM':
+                return this.drawCssItemParam(actor, x, y, width, match[2], lss);
             case 'STREVAL':
                 return this.drawCssEval(actor, x, y, width, match[2], false);
             case 'EVAL':
                 return this.drawCssEval(actor, x, y, width, match[2], true);
             case 'TEXT':
                 return this.drawCssText(actor, x, y, width, match[2]);
+            case 'NOTEQUIP':
+                return this.drawCssCannotEquip(actor, x, y, width, match[2], lss);
+            case 'EQUIP':
+                return this.drawCssActorEquip(actor, x, y, width, match[2], lss);
             default:
-                if (!actor) return 1;
-                match[2] = this.evalCssCustomFormula(actor, match[2]);
+//                if (!actor) return 1;
+                FTKR.setGameData(actor, lss.target, lss.item);
+                match[2] = this.convertCssNumber(actor, match[2]);
                 return this.drawCssActorStatusBase_A1(index, actor, x, y, width, match, lss, css);
         }
     };
@@ -2020,22 +2606,48 @@ FTKR.CSS = FTKR.CSS || {};
     // 括弧で表示する内容を指定する表示コード(括弧内をevalで計算させる場合)
     Window_Base.prototype.drawCssActorStatusBase_A1 = function(index, actor, x, y, width, match, lss, css) {
         switch(match[1].toUpperCase()) {
+            case 'EDIFFAOP':
+                return this.drawCssActorEquipAopDiff(actor, x, y, width, match[2], lss);
+            case 'EXDIFF':
+                return this.drawCssActorEquipXPDiff(actor, x, y, width, match[2], lss);
+            case 'ESDIFF':
+                return this.drawCssActorEquipSPDiff(actor, x, y, width, match[2], lss);
+            case 'EDIFF':
+                return this.drawCssActorEquipDiff(actor, x, y, width, match[2], lss);
+            case 'AOPDIFF':
+                return this.drawCssActorAopParamDiff(actor, x, y, width, match[2], lss);
+            case 'AOPBASE':
+                return this.drawCssActorAopParamBase(actor, x, y, width, match[2], lss);
+            case 'PDIFF':
+                return this.drawCssActorParamDiff(actor, x, y, width, match[2], lss);
+            case 'PBASE':
+                return this.drawCssActorParamBase(actor, x, y, width, match[2], lss);
+            case 'IIMAGE':
+                return this.drawCssItemImage(actor, x, y, width, match[2], lss);
+            case 'EXPARAM':
+                return this.drawCssActorEquipXParam(actor, x, y, width, match[2], lss);
+            case 'ESPARAM':
+                return this.drawCssActorEquipSParam(actor, x, y, width, match[2], lss);
             case 'EPARAM':
                 return this.drawCssActorEquipParam(actor, x, y, width, match[2], lss);
             case 'EAOP':
                 return this.drawCssActorEquipAopParam(actor, x, y, width, match[2], lss);
+            case 'AOP':
+                return this.drawCssActorAopParam(actor, x, y, width, match[2], lss);
             case 'AGAUGE':
                 return this.drawCssActorCustomGauge(actor, x, y, width, match[2]);
             case 'CGAUGE':
                 return this.drawCssClassCustomGauge(actor, x, y, width, match[2]);
+            case 'XPARAM':
+                return this.drawCssActorXParam(actor, x, y, width, match[2]);
+            case 'SPARAM':
+                return this.drawCssActorSParam(actor, x, y, width, match[2]);
             case 'PARAM':
                 return this.drawCssActorParam(actor, x, y, width, match[2]);
             case 'CUSTOM':
                 return this.drawCssActorCustom(actor, x, y, width, css.customs[match[2]]);
             case 'GAUGE':
                 return this.drawCssActorGauge(actor, x, y, width, css.gauges[match[2]]);
-            case 'EQUIP':
-                return this.drawCssActorEquip(actor, x, y, width, match[2]);
             case 'STATE2':
                 return this.drawCssActorIcons(index, actor, x, y, width, match[2]);
             case 'FACE':
@@ -2050,8 +2662,28 @@ FTKR.CSS = FTKR.CSS || {};
     // 括弧を使わない表示コード
     Window_Base.prototype.drawCssActorStatusBase_B = function(index, actor, x, y, width, status, lss, css) {
         switch (status.toUpperCase()) {
+            case 'IICON':
+                return this.drawCssItemIcon(actor, x, y, width, lss);
+            case 'INAME':
+                return this.drawCssItemName(actor, x, y, width, lss);
+            case 'IDESC':
+                return this.drawCssItemDesc(actor, x, y, width, lss);
+            case 'ITYPE':
+                return this.drawCssItemType(actor, x, y, width, lss);
+            case 'IETYPE':
+                return this.drawCssItemEType(actor, x, y, width, lss);
+            case 'ISCOPE':
+                return this.drawCssItemScope(actor, x, y, width, lss);
+            case 'IELEMENT':
+                return this.drawCssItemElement(actor, x, y, width, lss);
+            case 'INUMBER':
+                return this.drawCssItemNumber(actor, x, y, width, lss);
+            case 'MAPNAME':
+                return this.drawCssMapName(actor, x, y, width, lss);
             case 'FACE':
                 return this.drawCssActorFace(actor, x, y, width, lss);
+            case 'ECHARA':
+                return this.drawCssEnemyChara(actor, x, y, width);
             case 'CHARA':
                 return this.drawCssActorChara(actor, x, y, width, css.chara);
             case 'SV':
@@ -2083,6 +2715,158 @@ FTKR.CSS = FTKR.CSS || {};
             default:
                 return 1;
         }
+    };
+
+    //------------------------------------------------------------------------
+    //アイテム名の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssItemIcon = function(actor, x, y, width, lss) {
+        var index = lss.item ? lss.item.iconIndex : 0;
+        this.drawIcon(index, x, y);
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //アイテムアイコンの表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssItemName = function(actor, x, y, width, lss) {
+        var name = lss.item ? lss.item.name : '';
+        this.drawText(name, x, y, width);
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //アイテムの説明の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssItemDesc = function(actor, x, y, width, lss) {
+        var name = lss.item ? lss.item.description : '';
+        this.drawTextEx(name, x, y);
+        return 2;
+    };
+
+    //------------------------------------------------------------------------
+    //アイテムの設定の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssItemParam = function(actor, x, y, width, param, lss) {
+        var item = lss.item;
+        if (!item) return 1;
+        this.drawText(item[param], x, y, width);
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //アイテムのタイプ（スキルタイプ、武器タイプ、防具タイプ）
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssItemType = function(actor, x, y, width, lss) {
+        this.drawText(DataManager.itemTypeName(lss.item), x, y, width);
+        return 1;
+    };
+
+    Window_Base.ITEM_TYPES = [
+        '',
+        '一般アイテム',
+        '大事なもの',
+        '隠しアイテムA',
+        '隠しアイテムB',
+    ];
+
+    DataManager.itemTypeName = function(item) {
+        if (this.isSkill(item)) {
+            return $dataSystem.skillTypes[item.stypeId];
+        } else if (this.isItem(item)) {
+            return Window_Base.ITEM_TYPES[item.itypeId];
+        } else if (this.isWeapon(item)) {
+            return $dataSystem.weaponTypes[item.wtypeId];
+        } else if (this.isArmor(item)) {
+            return $dataSystem.armorTypes[item.atypeId];
+        } else {
+            return '';
+        }
+    };
+
+    //------------------------------------------------------------------------
+    //アイテムの装備タイプ
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssItemEType = function(actor, x, y, width, lss) {
+        var name = lss.item ?  $dataSystem.equipTypes[lss.item.etypeId] : '';
+        this.drawText(name, x, y, width);
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //アイテムの範囲
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssItemScope = function(actor, x, y, width, lss) {
+        var name = lss.item ? Window_Base.ITEM_SCOPE[lss.item.scope] : '';
+        this.drawText(name, x, y, width);
+        return 1;
+    };
+
+    Window_Base.ITEM_SCOPE = [
+        '',
+        '敵単体',
+        '敵全体',
+        '敵１体ランダム',
+        '敵２体ランダム',
+        '敵３体ランダム',
+        '敵４体ランダム',
+        '味方単体',
+        '味方全体',
+        '味方単体（戦闘不能）',
+        '味方全体（戦闘不能）',
+        '使用者'
+    ];
+
+    //------------------------------------------------------------------------
+    //アイテムの属性
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssItemElement = function(actor, x, y, width, lss) {
+        var name = lss.item && lss.item.damage ? $dataSystem.elements[lss.item.damage.elementId] : '';
+        this.drawText(name, x, y, width);
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //アイテムのカスタム画像の表示
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssItemImage = function(actor, dx, dy, width, id, lss) {
+        var item = lss.item;
+        if (!item || !item.cssbgi) return 1;
+        id = id || 0;
+        var bgi = item.cssbgi[id];
+        if (!bgi) return 1;
+        var bitmap = ImageManager.loadPicture(bgi.name);
+        if (!bitmap) return 1;
+        var sw = bgi.width || bitmap.width;
+        var sh = bgi.height || bitmap.height;
+        var sx = bgi.offsetX || 0;
+        var sy = bgi.offsetY || 0;
+
+        var dh = sh * bgi.scale / 100;
+        var dw = sw * bgi.scale / 100;
+        var offsetX = FTKR.CSS.cssStatus.image.posiX * (width - dw) / 2;
+        dx = Math.floor(dx + offsetX);
+        this.contents.blt(bitmap, sx, sy, sw, sh, dx, dy, dw, dh);
+        return Math.ceil(dh / this.lineHeight()) || 1;
+    };
+
+    //------------------------------------------------------------------------
+    //アイテムの所持数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssItemNumber = function(actor, x, y, width, lss) {
+        if (lss.item){
+            var numItems = $gameParty.numItems(lss.item);
+            this.drawText(numItems, x, y, width, 'right');
+        }
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //マップ名の表示
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssMapName = function(actor, x, y, width, lss) {
+        this.drawText($gameMap.displayName(), x, y, width);
+        return 1;
     };
 
     //------------------------------------------------------------------------
@@ -2121,6 +2905,23 @@ FTKR.CSS = FTKR.CSS || {};
 
     Window_Base.prototype.cssFacePositionX = function(actor) {
         return FTKR.CSS.cssStatus.face.posiX;
+    };
+
+    //------------------------------------------------------------------------
+    //エネミーの戦闘画像の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssEnemyChara = function(actor, dx, dy, width) {
+        if (!actor) return 1;
+        var bitmap = ImageManager.loadPicture(actor.battlerName());
+        if (!bitmap) return 1;
+        var sw = bitmap.width;
+        var sh = bitmap.height;
+        var sx = 0;
+        var sy = 0;
+        var dh = sh;
+        var dw = sw;
+        this.contents.blt(bitmap, sx, sy, sw, sh, dx, dy, dw, dh);
+        return Math.ceil(dh / this.lineHeight()) || 1;
     };
 
     //------------------------------------------------------------------------
@@ -2227,6 +3028,7 @@ FTKR.CSS = FTKR.CSS || {};
     //アクターの名前の表示関数
     //------------------------------------------------------------------------
     Window_Base.prototype.drawCssActorName = function(actor, x, y, width) {
+        if (!actor) return 1;
         this.changeTextColor(this.hpColor(actor));
         this.drawText(actor.name(), x, y, width);
         return 1;
@@ -2278,18 +3080,19 @@ FTKR.CSS = FTKR.CSS || {};
     Window_Base.prototype.drawCssIconsSprite = function(index, actor, x, y, width, line) {
         var css = FTKR.CSS.cssStatus.state;
         var iw = Window_Base._iconWidth;
+        var iconPadding = css.iconPadding;
         index = index % this.showActorNum();
         var iconSprites = this._stateIconSprite[index];
         if (!iconSprites) {
             iconSprites = [];
         }
         if(css.autoScale) {
-            var scale = this.iconScale();
+            var scale = this.iconScale(width);
             iw = iw * scale;
         }
         var maxlen = line ? this.lineHeight() * line : width;
         var offset = css.overlap ? this.getOverlapValue(actor, iw, maxlen, css) : iw;
-        var showNum = Math.min(Math.floor((maxlen - 4) / offset));
+        var showNum = Math.max(Math.floor((maxlen - iconPadding) / offset), 1);
         if (showNum < iconSprites.length) {
             iconSprites.forEach(function(sprite,i){
                 if (i < showNum) return;
@@ -2317,28 +3120,33 @@ FTKR.CSS = FTKR.CSS || {};
 
     Window_Base.prototype.getOverlapValue = function(actor, iw, maxlen, css) {
         var iconlen = actor.allIcons().length;
-        var diff = Math.max((maxlen - iw - 4) / (iconlen - 1), iw * css.rate);
+        var iconPadding = FTKR.CSS.cssStatus.state.iconPadding;
+        var diff = Math.max((maxlen - iw - iconPadding) / (iconlen - 1), iw * css.rate);
         return diff && diff < iw ? diff : iw;
     };
 
     Window_Base.prototype.iconOverlapOffset = function(iw, number, width, vartical) {
-        var len = vartical ? (number - 1) * this.lineHeight() + 4 : width - iw - 4;
+        var iconPadding = FTKR.CSS.cssStatus.state.iconPadding;
+        var len = vartical ? (number - 1) * this.lineHeight() + iconPadding : width - iw - iconPadding;
         var diff = number > 1 ? len / (number - 1) : 0;
         return diff < iw ? diff : iw;
     };
 
-    Window_Base.prototype.iconScale = function() {
+    Window_Base.prototype.iconScale = function(width) {
+        var iconPadding = FTKR.CSS.cssStatus.state.iconPadding;
         var iw = Window_Base._iconWidth;
-        return Math.min(Math.max(this.lineHeight() - 4, 0) / iw, 1);
+        var len = Math.min(this.lineHeight(), width);
+        return Math.min(Math.max(len - iconPadding, 0) / iw);
     };
 
     //アイコンの表示スケールを指定できる表示関数
     Window_Base.prototype.drawCssIcon = function(iconIndex, x, y, scale, auto) {
+        var iconPadding = FTKR.CSS.cssStatus.state.iconPadding;
         scale = scale || 1;
         var bitmap = ImageManager.loadSystem('IconSet');
         var pw = Window_Base._iconWidth;
         var ph = Window_Base._iconHeight;
-        if (auto) scale = Math.min(Math.max(this.lineHeight() - 4, 0) / pw, 1);
+        if (auto) scale = Math.min(Math.max(this.lineHeight() - iconPadding, 0) / pw, 1);
         var sx = iconIndex % 16 * pw;
         var sy = Math.floor(iconIndex / 16) * ph;
         this.contents.blt(bitmap, sx, sy, pw, ph, x, y, pw * scale, ph * scale);
@@ -2381,6 +3189,272 @@ FTKR.CSS = FTKR.CSS || {};
     };
 
     //------------------------------------------------------------------------
+    //素のパラメータの表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorParamBase = function(actor, x, y, width, paramId, lss) {
+        if (paramId < 0 && paramId > 7) return 0;
+        this.changeTextColor(this.systemColor());
+        this.drawText(TextManager.param(paramId), x, y, width);
+        this.resetTextColor();
+        this.drawText(actor.paramBase(paramId), x, y, width, 'right');
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //パラメータ差分の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorParamDiff = function(actor, x, y, width, paramId, lss) {
+        if (paramId < 0 && paramId > 7) return 1;
+        var param = actor.param(paramId);
+        var base = actor.paramBase(paramId);
+        var diff = param - base;
+        this.drawParamDiffValue(diff, x, y, width, FTKR.CSS.cssStatus.pdiff);
+        return 1;
+    };
+
+    Window_Base.prototype.drawParamDiffValue = function(value, x, y, width, formatParams) {
+        this.changeTextColor(this.paramchangeTextColor(value));
+        var text = '';
+        if (value > 0) {
+            text = formatParams.plus.format(value);
+        } else if (value < 0) {
+            text = formatParams.minus.format(-value);
+        }
+        if (formatParams.enabledEc) {
+            this.drawTextEx(text, x, y);
+        } else {
+            this.drawText(text, x, y, width, 'right');
+        }
+        this.resetTextColor();
+    };
+
+    //------------------------------------------------------------------------
+    //追加能力値の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorXParam = function(actor, x, y, width, paramId) {
+        if (paramId < 0 && paramId > 9) return 0;
+        this.changeTextColor(this.systemColor());
+        this.drawText(FTKR.CSS.cssStatus.xparam[paramId], x, y, width);
+        this.resetTextColor();
+        var text = actor.xparam(paramId);
+        if (FTKR.CSS.cssStatus.param.decimals) {
+            text = text.percent() + '%';
+        }
+        this.drawText(text, x, y, width, 'right');
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //特殊能力値の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorSParam = function(actor, x, y, width, paramId) {
+        if (paramId < 0 && paramId > 9) return 0;
+        this.changeTextColor(this.systemColor());
+        this.drawText(FTKR.CSS.cssStatus.sparam[paramId], x, y, width);
+        this.resetTextColor();
+        var text = actor.sparam(paramId);
+        if (FTKR.CSS.cssStatus.param.decimals) {
+            text = text.percent() + '%';
+        }
+        this.drawText(text, x, y, width, 'right');
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //指定したアイテムを装備した時のパラメータの表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorEquipParam = function(actor, x, y, width, paramId, lss) {
+        if (paramId < 0 && paramId > 7) return 0;
+        this.drawTextEx(FTKR.CSS.cssStatus.equip.arrow, x, y);
+        var target = lss.target;
+        var item = FTKR.gameData.item;
+        if (item && !actor.canEquip(item)) return 1;
+        if (this.checkShowEquipParam(actor, target)) {
+            var newValue = target.param(paramId);
+            var diffvalue = newValue - actor.param(paramId);
+            this.changeTextColor(this.paramchangeTextColor(diffvalue));
+            this.drawText(newValue, x, y, width, 'right');
+        }
+        return 1;
+    };
+
+    Window_Base.prototype.checkShowEquipParam = function(actor, target) {
+        return !!actor && !!target;
+    };
+
+    //------------------------------------------------------------------------
+    //指定したアイテムを装備した時の追加能力値の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorEquipXParam = function(actor, x, y, width, paramId, lss) {
+        if (paramId < 0 && paramId > 9) return 0;
+        this.drawTextEx(FTKR.CSS.cssStatus.equip.arrow, x, y);
+        var target = lss.target;
+        var item = FTKR.gameData.item;
+        if (item && !actor.canEquip(item)) return 1;
+        if (this.checkShowEquipParam(actor, target)) {
+            var newValue = target.xparam(paramId);
+            var diffvalue = newValue - actor.xparam(paramId);
+            this.changeTextColor(this.paramchangeTextColor(diffvalue));
+            if (FTKR.CSS.cssStatus.param.decimals) {
+                newValue = newValue.percent() + '%';
+            }
+            this.drawText(newValue, x, y, width, 'right');
+        }
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //指定したアイテムを装備した時の特殊能力値の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorEquipSParam = function(actor, x, y, width, paramId, lss) {
+        if (paramId < 0 && paramId > 9) return 0;
+        this.drawTextEx(FTKR.CSS.cssStatus.equip.arrow, x, y);
+        var target = lss.target;
+        var item = FTKR.gameData.item;
+        if (item && !actor.canEquip(item)) return 1;
+        if (this.checkShowEquipParam(actor, target)) {
+            var newValue = target.sparam(paramId);
+            var diffvalue = newValue - actor.sparam(paramId);
+            this.changeTextColor(this.paramchangeTextColor(diffvalue));
+            if (FTKR.CSS.cssStatus.param.decimals) {
+                newValue = newValue.percent() + '%';
+            }
+            this.drawText(newValue, x, y, width, 'right');
+        }
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //装備パラメータ差分の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorEquipDiff = function(actor, x, y, width, paramId, lss) {
+        if (paramId < 0 && paramId > 7) return 1;
+        var target = lss.target;
+        var item = FTKR.gameData.item;
+        if (item && !actor.canEquip(item)) return 1;
+        if (target) {
+            var newValue = target.param(paramId);
+            var diffvalue = newValue - actor.param(paramId);
+            this.drawParamDiffValue(diffvalue, x, y, width, FTKR.CSS.cssStatus.ediff);
+        }
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //追加能力値の装備パラメータ差分の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorEquipXPDiff = function(actor, x, y, width, paramId, lss) {
+        if (paramId < 0 && paramId > 9) return 1;
+        var target = lss.target;
+        var item = FTKR.gameData.item;
+        if (item && !actor.canEquip(item)) return 1;
+        if (target) {
+            var newValue = target.xparam(paramId);
+            var diffvalue = newValue - actor.xparam(paramId);
+            if (FTKR.CSS.cssStatus.param.decimals) {
+                diffvalue = diffvalue.percent() + '%';
+            }
+            this.drawParamDiffValue(diffvalue, x, y, width, FTKR.CSS.cssStatus.ediff);
+        }
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //特殊能力値の装備パラメータ差分の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorEquipSPDiff = function(actor, x, y, width, paramId, lss) {
+        if (paramId < 0 && paramId > 9) return 1;
+        var target = lss.target;
+        var item = FTKR.gameData.item;
+        if (item && !actor.canEquip(item)) return 1;
+        if (target) {
+            var newValue = target.sparam(paramId);
+            var diffvalue = newValue - actor.sparam(paramId);
+            if (FTKR.CSS.cssStatus.param.decimals) {
+                diffvalue = diffvalue.percent() + '%';
+            }
+            this.drawParamDiffValue(diffvalue, x, y, width, FTKR.CSS.cssStatus.ediff);
+        }
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //AOP能力値の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorAopParam = function(actor, x, y, width, paramId, lss) {
+        if (!Imported.FTKR_AOP) return 1;
+        if (paramId < 0 && FTKR.AOP.useParamNum > 9) return 1;
+        this.changeTextColor(this.systemColor());
+        this.drawText(FTKR.AOP.params[paramId].text, x, y, width);
+        this.resetTextColor();
+        this.drawText(actor.aopParam(paramId), x, y, width, 'right');
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //素のAOP能力値の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorAopParamBase = function(actor, x, y, width, paramId, lss) {
+        if (!Imported.FTKR_AOP) return 1;
+        if (paramId < 0 && FTKR.AOP.useParamNum > 9) return 1;
+        this.changeTextColor(this.systemColor());
+        this.drawText(FTKR.AOP.params[paramId].text, x, y, width);
+        this.resetTextColor();
+        this.drawText(actor.aopParamBase(paramId), x, y, width, 'right');
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //AOP能力値差分の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorAopParamDiff = function(actor, x, y, width, paramId, lss) {
+        if (!Imported.FTKR_AOP) return 1;
+        if (paramId < 0 && FTKR.AOP.useParamNum > 9) return 1;
+        var param = actor.aopParam(paramId);
+        var base = actor.aopParamBase(paramId);
+        var diff = param - base;
+        this.drawParamDiffValue(diff, x, y, width, FTKR.CSS.cssStatus.aopdiff);
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //指定したアイテムを装備した時のAOPパラメータの表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorEquipAopParam = function(actor, x, y, width, paramId, lss) {
+        if (!Imported.FTKR_AOP) return 1;
+        if (paramId < 0 && FTKR.AOP.useParamNum > 9) return 1;
+        this.drawTextEx(FTKR.CSS.cssStatus.equip.arrow, x, y);
+        var target = lss.target;
+        var item = FTKR.gameData.item;
+        if (item && !actor.canEquip(item)) return 1;
+        if (this.checkShowEquipParam(actor, target)) {
+            var newValue = target.aopParam(paramId);
+            var diffvalue = newValue - actor.aopParam(paramId);
+            this.changeTextColor(this.paramchangeTextColor(diffvalue));
+            this.drawText(newValue, x, y, width, 'right');
+        }
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //AOP装備パラメータ差分の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssActorEquipAopDiff = function(actor, x, y, width, paramId, lss) {
+        if (!Imported.FTKR_AOP) return 1;
+        if (paramId < 0 && FTKR.AOP.useParamNum > 7) return 1;
+        var target = lss.target;
+        var item = FTKR.gameData.item;
+        if (item && !actor.canEquip(item)) return 1;
+        if (target) {
+            var newValue = target.aopParam(paramId);
+            var diffvalue = newValue - actor.aopParam(paramId);
+            this.drawParamDiffValue(diffvalue, x, y, width, FTKR.CSS.cssStatus.ediffaop);
+        }
+        return 1;
+    };
+    
+
+    //------------------------------------------------------------------------
     //カスタムパラメータの表示関数
     //------------------------------------------------------------------------
     Window_Base.prototype.drawCssActorCustom = function(actor, x, y, width, custom) {
@@ -2388,10 +3462,10 @@ FTKR.CSS = FTKR.CSS || {};
         var name = custom.name || '';
         var formula = custom.formula || '';
         var unit = custom.unit || '';
-        var tux = convertTextWidth(unit);
+        var tux = this.convertTextWidth(unit);
         var value = this.evalCssCustomFormula(actor, formula);
         this.changeTextColor(this.systemColor());
-        var tx = convertTextWidth(name, x, y);
+        var tx = this.convertTextWidth(name);
         this.drawTextEx(name, x, y);
         this.resetTextColor();
         this.drawText(value, x + tx, y, width - tx - tux, 'right');
@@ -2413,7 +3487,7 @@ FTKR.CSS = FTKR.CSS || {};
             this.drawGauge(x, y, width, rate, color1, color2);
         }
         this.changeTextColor(this.systemColor());
-        var tx = convertTextWidth(gauge.name, x, y);
+        var tx = this.convertTextWidth(gauge.name);
         this.drawTextEx(gauge.name, x, y);
         if (gauge.ref) {
             var ref = this.evalCssStrFormula(actor, gauge.ref);
@@ -2449,13 +3523,32 @@ FTKR.CSS = FTKR.CSS || {};
     //------------------------------------------------------------------------
     //装備の表示関数
     //------------------------------------------------------------------------
-    Window_Base.prototype.drawCssActorEquip = function(actor, x, y, width, equipId) {
+    Window_Base.prototype.drawCssActorEquip = function(actor, x, y, width, equipId, lss) {
+        if ((equipId +'').toUpperCase() === 'SHOP') {
+            equipId = lss.item.etypeId - 1;
+        } else {
+            FTKR.setGameData(actor, lss.target, lss.item);
+            equipId = this.convertCssNumber(actor, equipId);
+        }
         var equip = actor.equips()[equipId];
         if (equip) {
             this.drawCssIcon(equip.iconIndex, x, y, 1, true);
             var iw = Window_Base._iconWidth + 4;
             this.resetTextColor();
             this.drawText(equip.name, x + iw, y, width - iw);
+        }
+        return 1;
+    };
+
+    //------------------------------------------------------------------------
+    //装備可否の表示関数
+    //------------------------------------------------------------------------
+    Window_Base.prototype.drawCssCannotEquip = function(actor, x, y, width, text, lss) {
+        var item = FTKR.gameData.item || lss.item;
+        if (!item) return 1;
+        if (!actor.canEquip(item)) {
+            text = text == 'null' ? '装備不可' : text;
+            this.drawTextEx(text, x, y);
         }
         return 1;
     };
@@ -2515,6 +3608,7 @@ FTKR.CSS = FTKR.CSS || {};
 
     Window_Base.prototype.drawCssImage = function(actor, dx, dy, width, id) {
         var bgi = actor.cssbgi(id) ? actor.cssbgi(id) : actor.actor().cssbgi[id];
+        if (!bgi) return 1;
         var bitmap = ImageManager.loadPicture(bgi.name);
         if (!bitmap) return 1;
         var sw = bgi.width || bitmap.width;
@@ -2527,43 +3621,6 @@ FTKR.CSS = FTKR.CSS || {};
         dx = Math.floor(dx + offsetX);
         this.contents.blt(bitmap, sx, sy, sw, sh, dx, dy, dw, dh);
         return Math.ceil(dh / this.lineHeight()) || 1;
-    };
-
-    //------------------------------------------------------------------------
-    //指定したアイテムを装備した時のパラメータの表示関数
-    //------------------------------------------------------------------------
-    Window_Base.prototype.drawCssActorEquipParam = function(actor, x, y, width, paramId, lss) {
-        if (paramId < 0 && paramId > 7) return 0;
-        this.drawTextEx(FTKR.CSS.cssStatus.equip.arrow, x, y);
-        var target = lss.target;
-        if(this.checkShowEquipParam(actor, target)) {
-            var newValue = target.param(paramId);
-            var diffvalue = newValue - actor.param(paramId);
-            this.changeTextColor(this.paramchangeTextColor(diffvalue));
-            this.drawText(newValue, x, y, width, 'right');
-        }
-        return 1;
-    };
-
-    Window_Base.prototype.checkShowEquipParam = function(actor, target) {
-        return !!actor && !!target;
-    };
-
-    //------------------------------------------------------------------------
-    //指定したアイテムを装備した時のAOPパラメータの表示関数
-    //------------------------------------------------------------------------
-    Window_Base.prototype.drawCssActorEquipAopParam = function(actor, x, y, width, paramId, lss) {
-        if (!Imported.FTKR_AOP) return 1;
-        if (paramId < 0 && FTKR.AOP.useParamNum > 7) return 1;
-        this.drawTextEx(FTKR.CSS.cssStatus.equip.arrow, x, y);
-        var target = lss.target;
-        if(this.checkShowEquipParam(actor, target)) {
-            var newValue = target.aopParam(paramId);
-            var diffvalue = newValue - actor.aopParam(paramId);
-            this.changeTextColor(this.paramchangeTextColor(diffvalue));
-            this.drawText(newValue, x, y, width, 'right');
-        }
-        return 1;
     };
 
     //------------------------------------------------------------------------
@@ -2595,9 +3652,9 @@ FTKR.CSS = FTKR.CSS || {};
         return 1;
     };
 
-    FTKR.CSS.Scene_Base_start = Scene_Base.prototype.start;
+    var _Scene_Base_start = Scene_Base.prototype.start;
     Scene_Base.prototype.start = function() {
-        FTKR.CSS.Scene_Base_start.call(this);
+        _Scene_Base_start.call(this);
         if ($gameParty) {
             $gameParty.members().forEach( function(actor){
                 if (actor && actor._levelUpMessage) {
@@ -2651,36 +3708,6 @@ FTKR.CSS = FTKR.CSS || {};
         return {};
     };
 
-    var _CSS_Window_Base_standardFontSize = Window_Base.prototype.standardFontSize;
-    Window_Base.prototype.standardFontSize = function() {
-        return this._customFontSize ? this._customFontSize : _CSS_Window_Base_standardFontSize.call(this);
-    };
-
-    var _CSS_Window_Base_standardPadding = Window_Base.prototype.standardPadding;
-    Window_Base.prototype.standardPadding = function() {
-        return this._customPadding ? this._customPadding : _CSS_Window_Base_standardPadding.call(this);
-    };
-
-    var _CSS_Window_Base_lineHeight = Window_Base.prototype.lineHeight;
-    Window_Base.prototype.lineHeight = function() {
-        return this._customLineHeight ? this._customLineHeight : _CSS_Window_Base_lineHeight.call(this);
-    };
-
-    var _CSS_Window_Base_standardBackOpacity = Window_Base.prototype.standardBackOpacity;
-    Window_Base.prototype.standardBackOpacity = function() {
-        return this._customBackOpacity ? this._customBackOpacity : _CSS_Window_Base_standardBackOpacity.call(this);
-    };
-
-    //書き換え
-    //ウィンドウ枠の表示
-    Window_Base.prototype._refreshFrame = function() {
-        if (!this._customHideFrame) Window.prototype._refreshFrame.call(this);
-    };
-    
-    //=============================================================================
-    // Window_Selectableの修正
-    //=============================================================================
-
     Window_Selectable.prototype.initCssLayout = function() {
         Window_Base.prototype.initCssLayout.call(this);
         var lss = this.standardCssLayout();
@@ -2691,30 +3718,181 @@ FTKR.CSS = FTKR.CSS || {};
         }
     };
 
+    //=============================================================================
+    // customデータの参照
+    //=============================================================================
+
+    var _CSS_Window_Base_standardFontSize = Window_Base.prototype.standardFontSize;
+    Window_Base.prototype.standardFontSize = function() {
+        return this._customFontSize ? this._customFontSize : _CSS_Window_Base_standardFontSize.call(this);
+    };
+
+    var _CSS_Window_Base_standardPadding = Window_Base.prototype.standardPadding;
+    Window_Base.prototype.standardPadding = function() {
+        return this._customPadding >= 0 ? this._customPadding : _CSS_Window_Base_standardPadding.call(this);
+    };
+
+    var _CSS_Window_Base_lineHeight = Window_Base.prototype.lineHeight;
+    Window_Base.prototype.lineHeight = function() {
+        return this._customLineHeight ? this._customLineHeight : _CSS_Window_Base_lineHeight.call(this);
+    };
+
+    var _CSS_Window_Base_standardBackOpacity = Window_Base.prototype.standardBackOpacity;
+    Window_Base.prototype.standardBackOpacity = function() {
+        return this._customBackOpacity >= 0 ? this._customBackOpacity : _CSS_Window_Base_standardBackOpacity.call(this);
+    };
+
+    //------------------------------------------------------------------------
+    // _customHideFrame
+    //------------------------------------------------------------------------
+    //ウィンドウ枠の表示
+    Window_Base.prototype._refreshFrame = function() {
+        Window.prototype._refreshFrame.call(this);
+        if (this._customHideFrame) {
+            this._windowFrameSprite.alpha = 0;//フレームだけ消す
+        } else {
+            this._windowFrameSprite.alpha = 1;
+        }
+    };
+
+    //------------------------------------------------------------------------
+    // _customSpacing
+    //------------------------------------------------------------------------
+    Window_Base.prototype.spacing = function() {
+        return 0;
+    };
+
+    var _CSS_Window_Selectable_spacing = Window_Selectable.prototype.spacing;
+    Window_Selectable.prototype.spacing = function() {
+        return this._customSpacing !== undefined ? this._customSpacing : _CSS_Window_Selectable_spacing.call(this);
+    };
+
+    Window_Selectable.prototype.customSpacing = function() {
+        return this._customSpacing !== undefined ? this._customSpacing : this.spacing();
+    };
+
+    //------------------------------------------------------------------------
+    // _customMaxCols
+    //------------------------------------------------------------------------
+
     var _CSS_Window_Selectable_maxCols = Window_Selectable.prototype.maxCols;
     Window_Selectable.prototype.maxCols = function() {
         return this._customMaxCols ? this._customMaxCols : _CSS_Window_Selectable_maxCols.call(this);
     };
 
+    Window_Selectable.prototype.customMaxCols = function() {
+        return this._customMaxCols ? this._customMaxCols : this.maxCols();
+    };
+
+    //------------------------------------------------------------------------
+    // _customCursorHeight
+    //------------------------------------------------------------------------
+
     Window_Selectable.prototype.cursorHeight = function() {
         return this._customCursorHeight;
     };
+
+    //------------------------------------------------------------------------
+    // _customHorSpacing
+    //------------------------------------------------------------------------
 
     Window_Selectable.prototype.itemHeightSpace = function() {
         return this._customHorSpacing;
     };
     
+    //=============================================================================
+    // customデータの反映
+    //=============================================================================
+
+    //書き換え
+    Window_Selectable.prototype.maxRows = function() {
+        return Math.max(Math.ceil(this.maxItems() / this.customMaxCols()), 1);
+    };
+    
+    //書き換え
+    Window_Selectable.prototype.row = function() {
+        return Math.floor(this.index() / this.customMaxCols());
+    };
+    
+    //書き換え
+    Window_Selectable.prototype.maxPageItems = function() {
+        return this.maxPageRows() * this.customMaxCols();
+    };
+    
+    //書き換え
+    Window_Selectable.prototype.topIndex = function() {
+        return this.topRow() * this.customMaxCols();
+    };
+    
+    //書き換え
+    Window_Selectable.prototype.cursorDown = function(wrap) {
+        var index = this.index();
+        var maxItems = this.maxItems();
+        var maxCols = this.customMaxCols();
+        if (index < maxItems - maxCols || (wrap && maxCols === 1)) {
+            this.select((index + maxCols) % maxItems);
+        }
+    };
+    
+    //書き換え
+    Window_Selectable.prototype.cursorUp = function(wrap) {
+        var index = this.index();
+        var maxItems = this.maxItems();
+        var maxCols = this.customMaxCols();
+        if (index >= maxCols || (wrap && maxCols === 1)) {
+            this.select((index - maxCols + maxItems) % maxItems);
+        }
+    };
+    
+    //書き換え
+    Window_Selectable.prototype.cursorRight = function(wrap) {
+        var index = this.index();
+        var maxItems = this.maxItems();
+        var maxCols = this.customMaxCols();
+        if (maxCols >= 2 && (index < maxItems - 1 || (wrap && this.isHorizontal()))) {
+            this.select((index + 1) % maxItems);
+        }
+    };
+    
+    //書き換え
+    Window_Selectable.prototype.cursorLeft = function(wrap) {
+        var index = this.index();
+        var maxItems = this.maxItems();
+        var maxCols = this.customMaxCols();
+        if (maxCols >= 2 && (index > 0 || (wrap && this.isHorizontal()))) {
+            this.select((index - 1 + maxItems) % maxItems);
+        }
+    };
+    
+    //書き換え
+    Window_Command.prototype.numVisibleRows = function() {
+        return Math.ceil(this.maxItems() / this.customMaxCols());
+    };
+        
+    //書き換え
+    Window_Selectable.prototype.itemWidth = function() {
+        return Math.floor((this.width - this.padding * 2 +
+                           this.customSpacing()) / this.customMaxCols() - this.customSpacing());
+    };
+    
+    var _Window_Selectable_itemHeight = Window_Selectable.prototype.itemHeight;
+    Window_Selectable.prototype.itemHeight = function() {
+        return this.cursorHeight() ? 
+            this.lineHeight() * this.cursorHeight() :
+            _Window_Selectable_itemHeight.call(this);
+    };
+
     Window_Selectable.prototype.unitHeight = function() {
         return this.itemHeight() + this.itemHeightSpace();
     };
 
     Window_Selectable.prototype.unitWidth = function() {
-        return this.itemWidth() + this.spacing();
+        return this.itemWidth() + this.customSpacing();
     };
 
     var _CSS_Window_Selectable_maxPageRows = Window_Selectable.prototype.maxPageRows;
     Window_Selectable.prototype.maxPageRows = function() {
-        if (this.itemHeightSpace()) {
+        if (this.itemHeightSpace() !== undefined) {
             var pageHeight = this.height - this.padding * 2;
             return Math.floor(pageHeight / this.unitHeight());
         } else {
@@ -2724,13 +3902,13 @@ FTKR.CSS = FTKR.CSS || {};
 
     var _CSS_Window_Selectable_topRow = Window_Selectable.prototype.topRow;
     Window_Selectable.prototype.topRow = function() {
-        return this.itemHeightSpace() ? Math.floor(this._scrollY / this.unitHeight()) :
+        return this.itemHeightSpace() !== undefined ? Math.floor(this._scrollY / this.unitHeight()) :
             _CSS_Window_Selectable_topRow.call(this);
     };
 
     var _CSS_Window_Selectable_setTopRow = Window_Selectable.prototype.setTopRow;
     Window_Selectable.prototype.setTopRow = function(row) {
-        if (this.itemHeightSpace()) {
+        if (this.itemHeightSpace() !== undefined) {
             var scrollY = row.clamp(0, this.maxTopRow()) * this.unitHeight();
             if (this._scrollY !== scrollY) {
                 this._scrollY = scrollY;
@@ -2744,9 +3922,9 @@ FTKR.CSS = FTKR.CSS || {};
 
     var _CSS_Window_Selectable_itemRect = Window_Selectable.prototype.itemRect;
     Window_Selectable.prototype.itemRect = function(index) {
-        if (this.itemHeightSpace()) {
+        if (this.itemHeightSpace() !== undefined) {
             var rect = new Rectangle();
-            var maxCols = this.maxCols();
+            var maxCols = this.customMaxCols();
             rect.width = this.itemWidth();
             rect.height = this.itemHeight();
             rect.x = index % maxCols * this.unitWidth() - this._scrollX;
@@ -2784,73 +3962,6 @@ FTKR.CSS = FTKR.CSS || {};
         if (!this.canMove()) return;
         FTKR.CSS.Sprite_Actor_updateTargetPosition.call(this);
     };
-
-    //=============================================================================
-    // GraphicalDesignMode.jsに対応
-    //=============================================================================
-    if (typeof $dataContainerProperties !== 'undefined') {
-    
-    var _Window_Base_loadProperty = Window_Base.prototype.loadProperty;
-    Window_Base.prototype.loadProperty = function(containerInfo) {
-        _Window_Base_loadProperty.apply(this, arguments);
-        if (containerInfo._customCssStatus) this._customCssStatus  = copyArray(containerInfo._customCssStatus);
-        if (containerInfo._customCssSpaceIn) this._customCssSpaceIn   = containerInfo._customCssSpaceIn;
-        if (containerInfo._customCssText1) this._customCssText1    = containerInfo._customCssText1;
-        if (containerInfo._customCssText2) this._customCssText2    = containerInfo._customCssText2;
-        if (containerInfo._customCssText3) this._customCssText3    = containerInfo._customCssText3;
-        if (containerInfo._customCssSpace) this._customCssSpace    = containerInfo._customCssSpace;
-        if (containerInfo._customCssWidthRate) this._customCssWidthRate = containerInfo._customCssWidthRate;
-        this.setCssStatus();
-        this.refresh();
-    };
-    
-    var _Window_Base_saveProperty = Window_Base.prototype.saveProperty;
-    Window_Base.prototype.saveProperty = function(containerInfo) {
-        _Window_Base_saveProperty.apply(this, arguments);
-        if (this._customCssStatus) containerInfo._customCssStatus   = copyArray(this._customCssStatus);
-        containerInfo._customCssSpaceIn  = this._customCssSpaceIn;
-        containerInfo._customCssText1    = this._customCssText1;
-        containerInfo._customCssText2    = this._customCssText2;
-        containerInfo._customCssText3    = this._customCssText3;
-        containerInfo._customCssSpace    = this._customCssSpace;
-        containerInfo._customCssWidthRate  = this._customCssWidthRate;
-      };
-      
-    var _Window_Base_initialize      = Window_Base.prototype.initialize;
-    Window_Base.prototype.initialize = function(x, y, width, height) {
-        _Window_Base_initialize.apply(this, arguments);
-        if (this._lssStatus) {
-            var lss = this.standardCssStatus();
-            if (lss.statusList) this._customCssStatus   = copyArray(lss.statusList);
-            this._customCssSpaceIn  = lss.spaceIn;
-            this._customCssText1    = lss.text1;
-            this._customCssText2    = lss.text2;
-            this._customCssText3    = lss.text3;
-            this._customCssSpace    = lss.space;
-            this._customCssWidthRate = lss.widthRate;
-        }
-    };
-
-    Window_Base.prototype.clearCssSpriteAll = function() {
-        $gameParty.allMembers().forEach( function(member, i) {
-            this.clearCssSprite(i);
-        },this);
-    };
-
-    Window_Base.prototype.setCssStatus = function() {
-        if (this._lssStatus) {
-            this.clearCssSpriteAll();
-            if (this._customCssStatus) this._lssStatus.statusList = copyArray(this._customCssStatus);
-            if (this._customCssSpaceIn) this._lssStatus.spaceIn = this._customCssSpaceIn;
-            if (this._customCssText1) this._lssStatus.text1 = this._customCssText1;
-            if (this._customCssText2) this._lssStatus.text2 = this._customCssText2;
-            if (this._customCssText3) this._lssStatus.text3 = this._customCssText3;
-            if (this._customCssSpace) this._lssStatus.space = this._customCssSpace;
-            if (this._customCssWidthRate) this._lssStatus.widthRate = this._customCssWidthRate;
-        }
-    };
-
-    }//GraphicalDesignMode.js
 
 }());//END
 
@@ -2904,8 +4015,9 @@ Sprite_CssStateIcon.prototype.setup = function(battler, showNum) {
 
 Sprite_CssStateIcon.prototype.updateIcon = function() {
     var icons = [];
-    if (this._battler && this._battler.isAlive()) {
-        icons = this._battler.allIcons();
+//    if (this._battler && this._battler.isAlive()) {
+    if (this._battler) {
+            icons = this._battler.allIcons();
     }
     if (icons.length > 0) {
         this._animationIndex++;
@@ -2949,6 +4061,9 @@ Sprite_CssStateIcon.prototype.updateOpacity = function() {
     }
 };
 
+//=============================================================================
+// YEP_BuffsStatesCoreの修正
+//=============================================================================
 if (Imported.YEP_BuffsStatesCore) {
 
 Sprite_CssStateIcon.prototype.updateTurnAndCounter = function() {

@@ -4,8 +4,8 @@
 // プラグインNo : 28
 // 作成者     : フトコロ
 // 作成日     : 2017/04/21
-// 最終更新日 : 2018/08/19
-// バージョン : v2.0.0
+// 最終更新日 : 2018/12/13
+// バージョン : v2.1.3
 //=============================================================================
 
 var Imported = Imported || {};
@@ -17,7 +17,7 @@ FTKR.CSS.SS = FTKR.CSS.SS || {};
 
 //=============================================================================
 /*:
- * @plugindesc v2.0.0 スキル画面のステータス表示を変更するプラグイン
+ * @plugindesc v2.1.3 スキル画面のステータス表示を変更するプラグイン
  * @author フトコロ
  *
  * @param --レイアウト設定--
@@ -26,7 +26,7 @@ FTKR.CSS.SS = FTKR.CSS.SS || {};
  * @param statusList
  * @desc 表示するステータスとその位置を設定します。
  * @type struct<status>[]
- * @default ["{\"text\":\"face\",\"x\":\"0\",\"y\":\"0\",\"width\":\"144\"}","{\"text\":\"name\",\"x\":\"162\",\"y\":\"0\",\"width\":\"150\"}","{\"text\":\"level\",\"x\":\"162\",\"y\":\"36\",\"width\":\"150\"}","{\"text\":\"state\",\"x\":\"162\",\"y\":\"72\",\"width\":\"150\"}","{\"text\":\"class\",\"x\":\"342\",\"y\":\"0\",\"width\":\"width - 342\"}","{\"text\":\"hp\",\"x\":\"342\",\"y\":\"36\",\"width\":\"width - 342\"}","{\"text\":\"mp\",\"x\":\"342\",\"y\":\"72\",\"width\":\"width - 342\"}"]
+ * @default ["{\"text\":\"face\",\"x\":\"0\",\"y\":\"0\",\"width\":\"144\"}","{\"text\":\"name\",\"x\":\"162\",\"y\":\"0\",\"width\":\"150\"}","{\"text\":\"level\",\"x\":\"162\",\"y\":\"36\",\"width\":\"150\"}","{\"text\":\"state\",\"x\":\"162\",\"y\":\"72\",\"width\":\"150\"}","{\"text\":\"class\",\"value\":\"\",\"x\":\"342\",\"y\":\"0\",\"width\":\"198\"}","{\"text\":\"hp\",\"value\":\"\",\"x\":\"342\",\"y\":\"36\",\"width\":\"198\"}","{\"text\":\"mp\",\"value\":\"\",\"x\":\"342\",\"y\":\"72\",\"width\":\"198\"}"]
  * 
  * @param Actor Status Space In Text
  * @desc Text内で複数表示する場合の間隔を指定します。
@@ -69,10 +69,12 @@ FTKR.CSS.SS = FTKR.CSS.SS || {};
  *-----------------------------------------------------------------------------
  * 概要
  *-----------------------------------------------------------------------------
- * 本プラグインを実装することで、スキル画面で表示するアクターの
- * ステータス表示のレイアウトを変更できます。
+ * スキル画面で表示するアクターのステータス表示のレイアウトを変更できます。
  * 
- * また、スキル画面のステータスウィンドウの設定を変更できます。
+ * このプラグインには、FTKR_CustomSimpleActorStatus.js (v3.0.0以降)が必要です。
+ * 
+ * プラグインの使い方は、下のオンラインマニュアルページを見てください。
+ * https://github.com/futokoro/RPGMaker/blob/master/FTKR_CSS_SkillStatus.ja.md
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -81,10 +83,11 @@ FTKR.CSS.SS = FTKR.CSS.SS || {};
  * 1.「プラグインマネージャー(プラグイン管理)」に、本プラグインを追加して
  *    ください。
  * 
- * 2. 本プラグインを動作させるためには、
- *    FTKR_CustomSimpleActorStatus.jsが必要です。
- *    本プラグインは、FTKR_CustomSimpleActorStatus.jsよりも下の位置に
- *    なるように追加してください。
+ * 2. 以下のプラグインと組み合わせる場合は、プラグイン管理の順番に注意してください。
+ * 
+ *    FTKR_CustomSimpleActorStatus.js (ステータス表示を変更)
+ *    ↑このプラグインよりも上に登録↑
+ *    FTKR_CSS_SkillStatus.js
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -161,7 +164,7 @@ FTKR.CSS.SS = FTKR.CSS.SS || {};
  * 本プラグインはMITライセンスのもとで公開しています。
  * This plugin is released under the MIT License.
  * 
- * Copyright (c) 2017 Futokoro
+ * Copyright (c) 2017,2018 Futokoro
  * http://opensource.org/licenses/mit-license.php
  * 
  * 
@@ -171,6 +174,17 @@ FTKR.CSS.SS = FTKR.CSS.SS || {};
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
+ * 
+ * v2.1.4 - 2018/12/13 : プラグインパラメータstatusListの初期値変更
+ * 
+ * v2.1.2 - 2018/09/29 : 機能追加
+ *    1. プラグインパラメータのリストで選択できる項目を追加。
+ * 
+ * v2.1.1 - 2018/09/12 : 不具合修正
+ *    1. プラグインパラメータ Number Visible Rows が反映されない不具合を修正。
+ * 
+ * v2.1.0 - 2018/08/30 : 機能追加
+ *    1. プラグインパラメータで表示するステータスをリストで選択できる機能を追加。
  * 
  * v2.0.0 - 2018/08/19 : FTKR_CustomSimpleActorStatus v3.0.0 対応版に変更
  * 
@@ -189,9 +203,103 @@ FTKR.CSS.SS = FTKR.CSS.SS || {};
 //=============================================================================
 /*~struct~status:
  * @param text
- * @desc 表示するステータス
+ * @desc 表示するステータスを選択
+ * リストにない場合は、直接テキストで記述
  * @default 
+ * @type select
+ * @option 名前
+ * @value name
+ * @option 二つ名
+ * @value nickname
+ * @option 職業
+ * @value class
+ * @option レベル
+ * @value level
+ * @option HP
+ * @value hp
+ * @option MP
+ * @value mp
+ * @option TP
+ * @value tp
+ * @option 顔画像
+ * @value face
+ * @option 顔画像(サイズ指定)
+ * @value face(%1)
+ * @option 歩行キャラ画像
+ * @value chara
+ * @option SV戦闘キャラ画像
+ * @value sv
+ * @option ステート(横)
+ * @value state
+ * @option ステート(縦)
+ * @value state2(%1)
+ * @option プロフィール
+ * @value profile
+ * @option 通常能力値
+ * @value param(%1)
+ * @option 通常能力値(素)
+ * @value pbase(%1)
+ * @option 通常能力値(増加分)
+ * @value pdiff(%1)
+ * @option 装備
+ * @value equip(%1)
+ * @option 装備パラメータ
+ * @value eparam(%1)
+ * @option カスタムパラメータ
+ * @value custom(%1)
+ * @option カスタムゲージ
+ * @value gauge(%1)
+ * @option アクター別カスタムゲージ
+ * @value agauge(%1)
+ * @option クラス別カスタムゲージ
+ * @value cgauge(%1)
+ * @option カスタム画像
+ * @value image
+ * @option カスタム画像(登録ID)
+ * @value image(%1)
+ * @option メッセージ
+ * @value message
+ * @option テキスト
+ * @value text(%1)
+ * @option JS計算式(数値表示)
+ * @value eval(%1)
+ * @option JS計算式(文字列表示)
+ * @value streval(%1)
+ * @option 横線
+ * @value line
+ * @option AOP能力値
+ * @value aop(%1)
+ * @option AOP能力値(素)
+ * @value aopbase(%1)
+ * @option AOP能力値(増加分)
+ * @value aopdiff(%1)
+ * @option AOP装備パラメータ
+ * @value eaop(%1)
+ * @option アイテム名
+ * @value iname
+ * @option アイテムアイコン
+ * @value iicon
+ * @option アイテム説明
+ * @value idesc
+ * @option アイテムタイプ
+ * @value itype
+ * @option アイテム装備タイプ
+ * @value ietype
+ * @option アイテム範囲
+ * @value iscope
+ * @option アイテム属性
+ * @value ielement
+ * @option アイテム設定詳細
+ * @value iparam(%1)
+ * @option アイテムカスタム画像
+ * @value iimage(%1)
+ * @option マップ名
+ * @value mapname
  *
+ * @param value
+ * @desc code(%1)の形式で設定するステータスの%1の内容を入力
+ * @default 
+ * 
  * @param x
  * @desc 表示するX座標
  * @default 0
@@ -257,7 +365,7 @@ if (Imported.FTKR_CSS) (function() {
     //ウィンドウの行数
     var _DS_Window_SkillStatus_numVisibleRows = Window_SkillStatus.prototype.numVisibleRows;
     Window_SkillStatus.prototype.numVisibleRows = function() {
-        return FTKR.CSS.SS.window.enable ? FTKR.CSS.SS.window.numVisibleRows :
+        return FTKR.CSS.SS.window.enabled ? FTKR.CSS.SS.window.numVisibleRows :
         _DS_Window_SkillStatus_numVisibleRows.call(this);
     };
 

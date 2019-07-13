@@ -4,8 +4,8 @@
 // プラグインNo : 24
 // 作成者     : フトコロ
 // 作成日     : 2017/04/19
-// 最終更新日 : 2018/05/31
-// バージョン : v1.3.1
+// 最終更新日 : 2019/04/13
+// バージョン : v1.4.0
 //=============================================================================
 
 var Imported = Imported || {};
@@ -16,7 +16,7 @@ FTKR.ESM = FTKR.ESM || {};
 
 //=============================================================================
 /*:
- * @plugindesc v1.3.1 SVキャラのモーションを拡張するプラグイン
+ * @plugindesc v1.4.0 SVキャラのモーションを拡張するプラグイン
  * @author フトコロ
  *
  * @noteParam ESM_画像
@@ -273,7 +273,7 @@ FTKR.ESM = FTKR.ESM || {};
  * 
  * @param Motion 16 Condition
  * @desc モーション7の状態を設定します。
- * @default 
+ * @default action
  * 
  * @param --カスタムモーション1 設定--
  * @default
@@ -385,6 +385,17 @@ FTKR.ESM = FTKR.ESM || {};
  * @param Custom Condition 5
  * @desc カスタムコンディション5の条件を設定します。
  * @default 
+ * 
+ * @param -- 特殊 設定--
+ * @default
+ * 
+ * @param Enabled Refresh In PartyCmd
+ * @desc パーティーコマンド時にモーションをリフレッシュさせない。
+ * パーティーコマンドをスキップするプラグイン使用時に有効にする
+ * @type boolean
+ * @on 有効
+ * @off 無効
+ * @default false
  * 
  * @param -- デバッグ 設定--
  * @default
@@ -540,6 +551,7 @@ FTKR.ESM = FTKR.ESM || {};
  *  escape  : 逃走中
  *  dying   : 瀕死時(残りHP25％以下)
  *  custom* : カスタムコンディション(* は番号)(例:custom1)
+ *  action  : 行動モーション全般(モーション名は空欄)
  * 
  * モーションは、モーション1～モーション16まで設定できます。
  * 数字が大きい方が、モーションの優先度が高くなります。
@@ -551,8 +563,10 @@ FTKR.ESM = FTKR.ESM || {};
  *    : abnormal, sleep, dead, custom*, other*
  * 
  * <Motion * Condition>
- *    :モーションの状態。上記の8種類から設定してください。
- *    :状態モーションに設定したモーションは、ループします。
+ *    :モーションの状態。上記の9種類から設定してください。
+ *    :状態モーションに設定したモーションは、ループします。(action除く)
+ * 
+ * ※action を設定しない場合は、すべての行動モーションよりも優先が高くなります。
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -608,6 +622,13 @@ FTKR.ESM = FTKR.ESM || {};
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
+ * 
+ * v1.4.0 - 2019/04/13 : 機能追加
+ *    1. 状態モーションの優先度に、行動モーション action の状態を設定する機能を追加。
+ * 
+ * v1.3.2 - 2019/03/10 : 機能追加
+ *    1. パーティーコマンドをスキップするプラグインに対応するプラグインパラメータ
+ *       Enabled Refresh In PartyCmd を追加。
  * 
  * v1.3.1 - 2018/05/31 : 不具合修正
  *    1. パーティーの誰かが防御を使用すると、パーティーメンバー全員が防御モーションを
@@ -692,11 +713,24 @@ FTKR.ESM = FTKR.ESM || {};
 
 (function() {
 
+    var paramParse = function(obj) {
+        return JSON.parse(JSON.stringify(obj, paramReplace));
+    };
+
+    var paramReplace = function(key, value) {
+        try {
+            return JSON.parse(value || null);
+        } catch (e) {
+            return value;
+        }
+    };
+    
     //=============================================================================
     // プラグイン パラメータ
     //=============================================================================
     var parameters = PluginManager.parameters('FTKR_ExSvMotion');
 
+    FTKR.ESM.skipPartyOn = paramParse(parameters['Enabled Refresh In PartyCmd']) || false;
     FTKR.ESM.motion = {
         debug:{
             enable:Number(parameters['Output Motion Log'] || 0),
@@ -859,6 +893,7 @@ FTKR.ESM = FTKR.ESM || {};
     //書き換え
     if (!Imported.YEP_BattleEngineCore) {
         Game_Battler.prototype.requestMotion = function(motionType) {
+            if (!this.checkActionPriority()) return;
             var motion = FTKR.ESM.motion.basic[motionType];
             this._motionType = motion ? motion : motionType;
         };
@@ -944,6 +979,17 @@ FTKR.ESM = FTKR.ESM || {};
         }
     };
 
+    Game_BattlerBase.prototype.checkActionPriority = function() {
+        var priority = 16;
+        for(var i = Game_BattlerBase.ESM_MOTION_NUMBER; i > 0; i--) {
+            if (FTKR.ESM.motion.state[i].condition.toUpperCase() === "ACTION") {
+                priority = i;
+                break;
+            }
+        }
+        return priority > this.checkConditionAll();
+    };
+
     Game_BattlerBase.prototype.checkConditionAll = function() {
         for(var i = Game_BattlerBase.ESM_MOTION_NUMBER; i > 0; i--) {
             if (this.checkCondition(FTKR.ESM.motion.state[i].condition)) {
@@ -964,7 +1010,6 @@ FTKR.ESM = FTKR.ESM || {};
             case /input/i.test(condition):
                 return this.isInputting() || this.isActing();
             case /guard/i.test(condition):
-                console.log('ok');
                 return this.isGuardMotion();
             case /chant/i.test(condition):
                 return this.isChanting();
@@ -1177,13 +1222,13 @@ FTKR.ESM = FTKR.ESM || {};
                 this.consoleLog_BattlerMotion('pattern')
             // ループしない場合 パターンをリセット
             } else {
-                this.refreshMotion();
+                this.esmUpdateRefreshMotion(battler);
             }
             this._motionCount = 0;
         }
     };
 
-    Sprite_Battler.prototype.esmRefreshMotion = function(battler) {
+    Sprite_Battler.prototype.esmUpdateRefreshMotion = function(battler) {
         if (battler.isFixedMotion()) return;
         var condition = battler.getEsmMotion();
         this.consoleLog_BattlerMotion('refresh', [condition])
@@ -1200,9 +1245,22 @@ FTKR.ESM = FTKR.ESM || {};
                 this._pattern = 0;
             }
             this._motion = this.motion();
-            this.consoleLog_BattlerMotion('data')
+            this.consoleLog_BattlerMotion('data');
         //condition の更新
         } else {
+            this._motionIndex = 0;
+            this._index = 0;
+            this.startMotion(condition);
+        }
+    };
+
+    Sprite_Battler.prototype.esmRefreshMotion = function(battler) {
+        if (battler.isFixedMotion()) return;
+        if (FTKR.ESM.skipPartyOn && BattleManager.isInputting() && !BattleManager.actor()) return;
+        var condition = battler.getEsmMotion();
+        this.consoleLog_BattlerMotion('refresh', [condition])
+        //condition の更新
+        if (this._motionType !== condition) {
             this._motionIndex = 0;
             this._index = 0;
             this.startMotion(condition);
@@ -1336,11 +1394,17 @@ FTKR.ESM = FTKR.ESM || {};
     var _ESM_Game_Battler_requestMotionRefresh = Game_Battler.prototype.requestMotionRefresh;
     Game_Battler.prototype.requestMotionRefresh = function() {
         if (this._motionType) {
-            this.requestMotion(this._motionType);
+            if (this.checkActionPriority()) {
+                this.requestMotion(this._motionType);
+            }
             this.clearMotion();
             return;
         }
         _ESM_Game_Battler_requestMotionRefresh.call(this);
+    };
+
+    Sprite_Battler.prototype.checkBattleInputActorUndecided = function(battler) {
+        return battler.isUndecided();
     };
 
     //書き換え

@@ -44,18 +44,11 @@
 
 # プラグインの登録
 
-このプラグインを使用するためには、`GraphicalDesignMode.js`プラグインが必要です。
+このプラグインを使用するためには、`GraphicalDesignMode.js`と[FTKR_CustomSimpleActorStatus](https://raw.githubusercontent.com/futokoro/RPGMaker/master/FTKR_CustomSimpleActorStatus.js)プラグインが必要です。
 プラグイン管理画面で、以下の順の配置になるように登録してください。
 ```
 GraphicalDesignMode.js
-FTKR_GDM_WindowEditor.js
-```
-
-また、[FTKR_CustomSimpleActorStatus_3](https://raw.githubusercontent.com/futokoro/RPGMaker/master/FTKR_CustomSimpleActorStatus_3.js)プラグインと組み合わせることで、ウィンドウにアクター画像やパラメータなどの詳細な表示設定が可能です。<br>
-プラグイン管理画面で、以下の順の配置になるように登録してください。
-```
-GraphicalDesignMode.js
-FTKR_CustomSimpleActorStatus_3.js
+FTKR_CustomSimpleActorStatus.js
 FTKR_GDM_WindowEditor.js
 ```
 
@@ -105,7 +98,7 @@ Ctrlキーを押しながら行うと、グリッドに合わせてサイズ変�
 
 | バージョン | 公開日 | 更新内容 |
 | --- | --- | --- |
-| [0.9.7](FTKR_GDM_WindowEditor.js) | 2018/07/31 | 不具合修正 |
+| [0.9.17](FTKR_GDM_WindowEditor.js) | 2018/09/15 | 不具合修正 |
 | 0.9.0 | 2018/07/15 | 試作版公開 |
 
 # ライセンス

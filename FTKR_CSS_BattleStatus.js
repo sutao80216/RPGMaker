@@ -4,8 +4,8 @@
 // プラグインNo : 16
 // 作成者     : フトコロ
 // 作成日     : 2017/04/11
-// 最終更新日 : 2018/08/19
-// バージョン : v2.0.0
+// 最終更新日 : 2018/12/29
+// バージョン : v2.2.0
 //=============================================================================
 
 var Imported = Imported || {};
@@ -17,9 +17,16 @@ FTKR.CSS.BS = FTKR.CSS.BS || {};
 
 //=============================================================================
 /*:
- * @plugindesc v2.0.0 バトル画面のステータス表示を変更するプラグイン
+ * @plugindesc v2.2.0 バトル画面のステータス表示を変更するプラグイン
  * @author フトコロ
- *
+ * 
+ * @param Enabled Save WindowLayout
+ * @desc ウィンドウ設定データをセーブできるようにする。
+ * @default false
+ * @type boolean
+ * @on 有効
+ * @off 無効
+ * 
  * @param --バトルパーティー設定--
  * @desc 
  * 
@@ -34,7 +41,7 @@ FTKR.CSS.BS = FTKR.CSS.BS || {};
  * @param statusList
  * @desc 表示するステータスとその位置を設定します。
  * @type struct<status>[]
- * @default ["{\"text\":\"name\",\"x\":\"0\",\"y\":\"0\",\"width\":\"150\"}","{\"text\":\"state\",\"x\":\"156\",\"y\":\"0\",\"width\":\"150\"}","{\"text\":\"[hp/mp]\",\"x\":\"312\",\"y\":\"0\",\"width\":\"width - 312\"}"]
+ * @default ["{\"text\":\"name\",\"x\":\"0\",\"y\":\"0\",\"width\":\"150\"}","{\"text\":\"state\",\"x\":\"156\",\"y\":\"0\",\"width\":\"150\"}","{\"text\":\"[hp/mp]\",\"value\":\"\",\"x\":\"312\",\"y\":\"0\",\"width\":\"width - 312\"}"]
  * 
  * @param Actor Status Space In Text
  * @desc Text内で複数表示する場合の間隔を指定します。
@@ -124,7 +131,10 @@ FTKR.CSS.BS = FTKR.CSS.BS || {};
  * 本プラグインを実装することで、バトル画面で表示するアクターの
  * ステータス表示のレイアウトを変更できます。
  * 
- * また、バトル画面のステータスウィンドウの設定を変更できます。
+ * このプラグインには、FTKR_CustomSimpleActorStatus.js (v3.0.0以降)が必要です。
+ * 
+ * プラグインの使い方は、下のオンラインマニュアルページを見てください。
+ * https://github.com/futokoro/RPGMaker/blob/master/FTKR_CSS_BattleStatus.ja.md
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -133,10 +143,11 @@ FTKR.CSS.BS = FTKR.CSS.BS || {};
  * 1.「プラグインマネージャー(プラグイン管理)」に、本プラグインを追加して
  *    ください。
  * 
- * 2. 本プラグインを動作させるためには、
- *    FTKR_CustomSimpleActorStatus.js(v3.0.0以降)が必要です。
- *    本プラグインは、FTKR_CustomSimpleActorStatus.jsよりも下の位置に
- *    なるように追加してください。
+ * 2. 以下のプラグインと組み合わせる場合は、プラグイン管理の順番に注意してください。
+ * 
+ *    FTKR_CustomSimpleActorStatus.js (ステータス表示を変更)
+ *    ↑このプラグインよりも上に登録↑
+ *    FTKR_CSS_BattleStatus.js
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -260,6 +271,20 @@ FTKR.CSS.BS = FTKR.CSS.BS || {};
  * 変更来歴
  *-----------------------------------------------------------------------------
  * 
+ * v2.2.0 - 2018/12/29 : 機能追加
+ *    1. ウィンドウ設定をセーブできる機能を追加。
+ * 
+ * v2.1.3 - 2018/12/13 : プラグインパラメータstatusListの初期値変更
+ * 
+ * v2.1.2 - 2018/09/29 : 機能追加
+ *    1. プラグインパラメータのリストで選択できる項目を追加。
+ * 
+ * v2.1.1 - 2018/09/12 : 不具合修正
+ *    1. プラグインパラメータ Number Visible Rows が反映されない不具合を修正。
+ * 
+ * v2.1.0 - 2018/08/30 : 機能追加
+ *    1. プラグインパラメータで表示するステータスをリストで選択できる機能を追加。
+ * 
  * v2.0.0 - 2018/08/19 : FTKR_CustomSimpleActorStatus v3.0.0 対応版に変更
  * 
  * v1.3.0 - 2017/11/18 : 仕様変更
@@ -292,9 +317,103 @@ FTKR.CSS.BS = FTKR.CSS.BS || {};
 //=============================================================================
 /*~struct~status:
  * @param text
- * @desc 表示するステータス
+ * @desc 表示するステータスを選択
+ * リストにない場合は、直接テキストで記述
  * @default 
+ * @type select
+ * @option 名前
+ * @value name
+ * @option 二つ名
+ * @value nickname
+ * @option 職業
+ * @value class
+ * @option レベル
+ * @value level
+ * @option HP
+ * @value hp
+ * @option MP
+ * @value mp
+ * @option TP
+ * @value tp
+ * @option 顔画像
+ * @value face
+ * @option 顔画像(サイズ指定)
+ * @value face(%1)
+ * @option 歩行キャラ画像
+ * @value chara
+ * @option SV戦闘キャラ画像
+ * @value sv
+ * @option ステート(横)
+ * @value state
+ * @option ステート(縦)
+ * @value state2(%1)
+ * @option プロフィール
+ * @value profile
+ * @option 通常能力値
+ * @value param(%1)
+ * @option 通常能力値(素)
+ * @value pbase(%1)
+ * @option 通常能力値(増加分)
+ * @value pdiff(%1)
+ * @option 装備
+ * @value equip(%1)
+ * @option 装備パラメータ
+ * @value eparam(%1)
+ * @option カスタムパラメータ
+ * @value custom(%1)
+ * @option カスタムゲージ
+ * @value gauge(%1)
+ * @option アクター別カスタムゲージ
+ * @value agauge(%1)
+ * @option クラス別カスタムゲージ
+ * @value cgauge(%1)
+ * @option カスタム画像
+ * @value image
+ * @option カスタム画像(登録ID)
+ * @value image(%1)
+ * @option メッセージ
+ * @value message
+ * @option テキスト
+ * @value text(%1)
+ * @option JS計算式(数値表示)
+ * @value eval(%1)
+ * @option JS計算式(文字列表示)
+ * @value streval(%1)
+ * @option 横線
+ * @value line
+ * @option AOP能力値
+ * @value aop(%1)
+ * @option AOP能力値(素)
+ * @value aopbase(%1)
+ * @option AOP能力値(増加分)
+ * @value aopdiff(%1)
+ * @option AOP装備パラメータ
+ * @value eaop(%1)
+ * @option アイテム名
+ * @value iname
+ * @option アイテムアイコン
+ * @value iicon
+ * @option アイテム説明
+ * @value idesc
+ * @option アイテムタイプ
+ * @value itype
+ * @option アイテム装備タイプ
+ * @value ietype
+ * @option アイテム範囲
+ * @value iscope
+ * @option アイテム属性
+ * @value ielement
+ * @option アイテム設定詳細
+ * @value iparam(%1)
+ * @option アイテムカスタム画像
+ * @value iimage(%1)
+ * @option マップ名
+ * @value mapname
  *
+ * @param value
+ * @desc code(%1)の形式で設定するステータスの%1の内容を入力
+ * @default 
+ * 
  * @param x
  * @desc 表示するX座標
  * @default 0
@@ -327,6 +446,8 @@ FTKR.CSS.BS = FTKR.CSS.BS || {};
     //=============================================================================
     var parameters = PluginManager.parameters('FTKR_CSS_BattleStatus');
 
+    var saveCssWindow = paramParse(parameters['Enabled Save WindowLayout']) || false;
+
     FTKR.CSS.BS.party = {
         maxMembers    :Number(parameters['Max Battle Members'] || 0),
     };
@@ -352,13 +473,32 @@ FTKR.CSS.BS = FTKR.CSS.BS || {};
     };
 
     FTKR.CSS.BS.position = {
-        enable    :Number(parameters['Enable Custom Position'] || 0),
+        enabled   :Number(parameters['Enable Custom Position'] || 0),
         diffX     :Number(parameters['Diff Position X'] || 0),
         diffY     :Number(parameters['Diff Position Y'] || 0),
         diffCol   :Number(parameters['Diff Column'] || 0),
         centerX   :Number(parameters['Center Position X'] || 0),
         centerY   :Number(parameters['Center Position Y'] || 0),
         maxVer    :Number(parameters['Max Number of Vertical'] || 0),
+    };
+
+    //=============================================================================
+    // Game_System
+    //=============================================================================
+    var _Game_System_initialize = Game_System.prototype.initialize;
+    Game_System.prototype.initialize = function() {
+        _Game_System_initialize.call(this);
+        if (saveCssWindow) {
+            this.resetCssBattleWindow();
+        }
+    };
+
+    Game_System.prototype.resetCssBattleWindow = function() {
+        this._cssBattleWindow = JsonEx.makeDeepCopy(FTKR.CSS.BS.window);
+    };
+
+    Game_System.prototype.cssBattleWindow = function() {
+        return saveCssWindow ? this._cssBattleWindow : FTKR.CSS.BS.window;
     };
 
     //=============================================================================
@@ -379,7 +519,7 @@ FTKR.CSS.BS = FTKR.CSS.BS || {};
     if (Imported.FTKR_CSS) {
 
     Window_BattleStatus.prototype.standardCssLayout = function() {
-      return FTKR.CSS.BS.window;
+      return $gameSystem.cssBattleWindow();
     };
 
     Window_BattleStatus.prototype.standardCssStatus = function() {
@@ -395,8 +535,7 @@ FTKR.CSS.BS = FTKR.CSS.BS || {};
     //ウィンドウの行数
     var _DS_Window_BattleStatus_numVisibleRows = Window_BattleStatus.prototype.numVisibleRows;
     Window_BattleStatus.prototype.numVisibleRows = function() {
-        return FTKR.CSS.BS.window.enable ? FTKR.CSS.BS.window.numVisibleRows :
-        _DS_Window_BattleStatus_numVisibleRows.call(this);
+        return $gameSystem.cssBattleWindow().enabled ? $gameSystem.cssBattleWindow().numVisibleRows : _DS_Window_BattleStatus_numVisibleRows.call(this);
     };
 
     //書き換え
@@ -416,7 +555,7 @@ FTKR.CSS.BS = FTKR.CSS.BS || {};
     var _BS_Sprite_Actor_setActorHome = Sprite_Actor.prototype.setActorHome;
     Sprite_Actor.prototype.setActorHome = function(index) {
         _BS_Sprite_Actor_setActorHome.call(this, index);
-        if (FTKR.CSS.BS.position.enable) {
+        if (FTKR.CSS.BS.position.enabled) {
             this.setHome(this.partyPositionX(index), this.partyPositionY(index));
         }
     };

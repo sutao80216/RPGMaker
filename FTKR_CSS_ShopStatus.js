@@ -4,8 +4,8 @@
 // プラグインNo : 52
 // 作成者     : フトコロ
 // 作成日     : 2017/07/23
-// 最終更新日 : 2018/08/19
-// バージョン : v2.0.0
+// 最終更新日 : 2019/05/12
+// バージョン : v2.3.0
 //=============================================================================
 
 var Imported = Imported || {};
@@ -15,48 +15,49 @@ var FTKR = FTKR || {};
 FTKR.CSS = FTKR.CSS || {};
 FTKR.CSS.SpS = FTKR.CSS.SpS || {};
 
+//=============================================================================
 /*:
- * @plugindesc v2.0.0 ショップ画面のステータスレイアウトを変更する
+ * @plugindesc v2.3.0 ショップ画面のステータスレイアウトを変更する
  * @author フトコロ
  *
  * @param --共通レイアウト設定--
- * @default
+ * @desc 
  * 
  * @param commonStatusList
  * @desc 表示するステータスとその位置を設定します。
  * @type struct<status>[]
- * @default ["{\"text\":\"text(\\\\c[16]持っている数)\",\"x\":\"0\",\"y\":\"0\",\"width\":\"width/2\"}","{\"text\":\"eval($gameParty.numItems(item))\",\"x\":\"width/2\",\"y\":\"0\",\"width\":\"width/2\"}"]
+ * @default ["{\"text\":\"text(%1)\",\"value\":\"\\\\c[16]持っている数\",\"x\":\"0\",\"y\":\"0\",\"width\":\"162\"}","{\"text\":\"inumber\",\"value\":\"\",\"x\":\"162\",\"y\":\"0\",\"width\":\"162\"}"]
  * 
  * @param Common Status Space In Text
  * @desc Text内で複数表示する場合の間隔を指定します。
  * @default 5
  * 
  * @param --武器のレイアウト設定--
- * @default
+ * @desc 
  * 
  * @param weaponStatusList
  * @desc 表示するステータスとその位置を設定します。
  * @type struct<status>[]
- * @default ["{\"text\":\"name\",\"x\":\"0\",\"y\":\"0\",\"width\":\"width/2\"}","{\"text\":\"eparam(2)\",\"x\":\"width/2\",\"y\":\"0\",\"width\":\"width/2\"}","{\"text\":\"equip(item.etypeId-1)\",\"x\":\"0\",\"y\":\"line\",\"width\":\"width\"}"]
+ * @default ["{\"text\":\"name\",\"value\":\"\",\"x\":\"0\",\"y\":\"0\",\"width\":\"162\"}","{\"text\":\"eparam(%1)\",\"value\":\"2\",\"x\":\"162\",\"y\":\"0\",\"width\":\"162\"}","{\"text\":\"equip(%1)\",\"value\":\"shop\",\"x\":\"0\",\"y\":\"36\",\"width\":\"324\"}"]
  * 
  * @param Weapon Status Space In Text
  * @desc Text内で複数表示する場合の間隔を指定します。
  * @default 5
  * 
  * @param --防具のレイアウト設定--
- * @default
+ * @desc 
  * 
  * @param armorStatusList
  * @desc 表示するステータスとその位置を設定します。
  * @type struct<status>[]
- * @default ["{\"text\":\"name\",\"x\":\"0\",\"y\":\"0\",\"width\":\"width/2\"}","{\"text\":\"eparam(3)\",\"x\":\"width/2\",\"y\":\"0\",\"width\":\"width/2\"}","{\"text\":\"equip(item.etypeId-1)\",\"x\":\"0\",\"y\":\"line\",\"width\":\"width\"}"]
+ * @default ["{\"text\":\"name\",\"value\":\"\",\"x\":\"0\",\"y\":\"0\",\"width\":\"162\"}","{\"text\":\"eparam(%1)\",\"value\":\"3\",\"x\":\"162\",\"y\":\"0\",\"width\":\"162\"}","{\"text\":\"equip(%1)\",\"value\":\"shop\",\"x\":\"0\",\"y\":\"36\",\"width\":\"324\"}"]
  * 
  * @param Armor Status Space In Text
  * @desc Text内で複数表示する場合の間隔を指定します。
  * @default 5
  * 
  * @param --武器防具以外のレイアウト設定--
- * @default
+ * @desc 
  * 
  * @param itemStatusList
  * @desc 表示するステータスとその位置を設定します。
@@ -142,7 +143,10 @@ FTKR.CSS.SpS = FTKR.CSS.SpS || {};
  * 本プラグインを実装することで、ショップ画面で表示するアクターの
  * ステータス表示のレイアウトを変更できます。
  * 
- * また、ショップ画面のステータスウィンドウの設定を変更できます。
+ * このプラグインには、FTKR_CustomSimpleActorStatus.js (v3.0.0以降)が必要です。
+ * 
+ * プラグインの使い方は、下のオンラインマニュアルページを見てください。
+ * https://github.com/futokoro/RPGMaker/blob/master/FTKR_CSS_ShopStatus.ja.md
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -151,15 +155,11 @@ FTKR.CSS.SpS = FTKR.CSS.SpS || {};
  * 1.「プラグインマネージャー(プラグイン管理)」に、本プラグインを追加して
  *    ください。
  * 
- * 2. 本プラグインを動作させるためには、
- *    FTKR_CustomSimpleActorStatus.jsが必要です。
- *    本プラグインは、FTKR_CustomSimpleActorStatus.jsよりも下の位置に
- *    なるように追加してください。
+ * 2. 以下のプラグインと組み合わせる場合は、プラグイン管理の順番に注意してください。
  * 
- * 3. ゲーム画面でレイアウトを変更する場合は、以下のプラグインが必要です。
- * 
- *    GraphicalDesignMode.js
- *    FTKR_CSS_GDM.js
+ *    FTKR_CustomSimpleActorStatus.js (ステータス表示を変更)
+ *    ↑このプラグインよりも上に登録↑
+ *    FTKR_CSS_ShopStatus.js
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -267,13 +267,33 @@ FTKR.CSS.SpS = FTKR.CSS.SpS || {};
  * 本プラグインはMITライセンスのもとで公開しています。
  * This plugin is released under the MIT License.
  * 
- * Copyright (c) 2017 Futokoro
+ * Copyright (c) 2017,2018 Futokoro
  * http://opensource.org/licenses/mit-license.php
  * 
  * 
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
+ * 
+ * v2.3.0 - 2019/05/12 : FTKR_CustomSimpleActorStatus の v3.5.3 に対応
+ *    1. プラグインパラメータの初期値を変更。
+ * 
+ * v2.2.2 - 2018/12/27 : 不具合修正
+ *    1. 武器防具のアイテム用パラメータのコードが正しく反映されない不具合を修正。
+ * 
+ * v2.2.1 - 2018/12/13 : プラグインパラメータstatusListの初期値変更
+ * 
+ * v2.2.0 - 2018/10/10 : 仕様変更
+ *    1. ediff(x)およびediffaop(x)のコードをFTKR_CustomSimpleActorStatusに移動。
+ * 
+ * v2.1.2 - 2018/09/29 : 機能追加
+ *    1. プラグインパラメータのリストで選択できる項目を追加。
+ * 
+ * v2.1.1 - 2018/09/19 : 不具合修正
+ *    1. 武器防具以外のパラメータ表示コードの一部が正しく反映されない不具合を修正。
+ * 
+ * v2.1.0 - 2018/08/30 : 機能追加
+ *    1. プラグインパラメータで表示するステータスをリストで選択できる機能を追加。
  * 
  * v2.0.0 - 2018/08/19 : FTKR_CustomSimpleActorStatus v3.0.0 対応版に変更
  * 
@@ -296,13 +316,127 @@ FTKR.CSS.SpS = FTKR.CSS.SpS || {};
  * v1.0.0 - 2017/07/23 : 初版作成
  * 
  *-----------------------------------------------------------------------------
-*
+*/
 //=============================================================================
 /*~struct~status:
  * @param text
- * @desc 表示するステータス
+ * @desc 表示するステータスを選択
+ * リストにない場合は、直接テキストで記述
  * @default 
+ * @type select
+ * @option 名前
+ * @value name
+ * @option 二つ名
+ * @value nickname
+ * @option 職業
+ * @value class
+ * @option レベル
+ * @value level
+ * @option HP
+ * @value hp
+ * @option MP
+ * @value mp
+ * @option TP
+ * @value tp
+ * @option 顔画像
+ * @value face
+ * @option 顔画像(サイズ指定)
+ * @value face(%1)
+ * @option 歩行キャラ画像
+ * @value chara
+ * @option SV戦闘キャラ画像
+ * @value sv
+ * @option ステート(横)
+ * @value state
+ * @option ステート(縦)
+ * @value state2(%1)
+ * @option プロフィール
+ * @value profile
+ * @option 通常能力値
+ * @value param(%1)
+ * @option 通常能力値(素)
+ * @value pbase(%1)
+ * @option 通常能力値(増加分)
+ * @value pdiff(%1)
+ * @option 追加能力値
+ * @value xparam(%1)
+ * @option 特殊能力値
+ * @value sparam(%1)
+ * @option 装備
+ * @value equip(%1)
+ * @option 装備通常能力値
+ * @value eparam(%1)
+ * @option 装備追加能力値
+ * @value exparam(%1)
+ * @option 装備特殊能力値
+ * @value esparam(%1)
+ * @option 装備通常能力値差分
+ * @value ediff(%1)
+ * @option 装備追加能力値差分
+ * @value exdiff(%1)
+ * @option 装備特殊能力値差分
+ * @value esdiff(%1)
+ * @option 装備不可表示
+ * @value notequip(%1)
+ * @option カスタムパラメータ
+ * @value custom(%1)
+ * @option カスタムゲージ
+ * @value gauge(%1)
+ * @option アクター別カスタムゲージ
+ * @value agauge(%1)
+ * @option クラス別カスタムゲージ
+ * @value cgauge(%1)
+ * @option カスタム画像
+ * @value image
+ * @option カスタム画像(登録ID)
+ * @value image(%1)
+ * @option メッセージ
+ * @value message
+ * @option テキスト
+ * @value text(%1)
+ * @option JS計算式(数値表示)
+ * @value eval(%1)
+ * @option JS計算式(文字列表示)
+ * @value streval(%1)
+ * @option 横線
+ * @value line
+ * @option AOP能力値
+ * @value aop(%1)
+ * @option AOP能力値(素)
+ * @value aopbase(%1)
+ * @option AOP能力値(増加分)
+ * @value aopdiff(%1)
+ * @option AOP装備パラメータ
+ * @value eaop(%1)
+ * @option AOP装備パラメータ差分
+ * @value ediffaop(%1)
+ * @option アイテム名
+ * @value iname
+ * @option アイテムアイコン
+ * @value iicon
+ * @option アイテム説明
+ * @value idesc
+ * @option アイテムタイプ
+ * @value itype
+ * @option アイテム装備タイプ
+ * @value ietype
+ * @option アイテム範囲
+ * @value iscope
+ * @option アイテム属性
+ * @value ielement
+ * @option アイテム設定詳細
+ * @value iparam(%1)
+ * @option アイテムカスタム画像
+ * @value iimage(%1)
+ * @option アイテム所持数
+ * @value inumber
+ * @option マップ名
+ * @value mapname
  *
+ * @param value
+ * @desc code(%1)の形式で設定するステータスの%1の内容を入力
+ * @default 
+ * 
  * @param x
  * @desc 表示するX座標
  * @default 0
@@ -399,64 +533,21 @@ if (Imported.FTKR_CSS) (function() {
     // CSS表示コードを追加
     //=============================================================================
 
-    var _SpS_DatabaseLoaded = false;
-    var _SpS_DataManager_isDatabaseLoaded = DataManager.isDatabaseLoaded;
-    DataManager.isDatabaseLoaded = function() {
-        if (!_SpS_DataManager_isDatabaseLoaded.call(this)) return false;
-        if (!_SpS_DatabaseLoaded) {
-            this.cssActorImageNotetags($dataItems);
-            this.cssActorImageNotetags($dataWeapons);
-            this.cssActorImageNotetags($dataArmors);
-            _SpS_DatabaseLoaded = true;
-        }
-        return true;
-    };
-
     var _SpS_Window_Base_drawCssActorStatusBase_A1 = Window_Base.prototype.drawCssActorStatusBase_A1;
     Window_Base.prototype.drawCssActorStatusBase_A1 = function(index, actor, x, y, width, match, lss, css) {
         switch(match[1].toUpperCase()) {
-            case 'EDIFF':
-                return this.drawCssActorEquipDiff(actor, x, y, width, match[2], lss);
-            case 'EDIFFAOP':
-                return this.drawCssActorEquipAopDiff(actor, x, y, width, match[2], lss);
             case 'ITEMIMAGE':
-                return this.drawCssItemImage(actor, x, y, width, match[2]);
+                return this.drawCssItemImage(actor, x, y, width, match[2], lss);
         }
         return _SpS_Window_Base_drawCssActorStatusBase_A1.call(this, index, actor, x, y, width, match, lss, css);
     };
 
-    Window_Base.prototype.drawCssActorEquipDiff = function(actor, x, y, width, paramId, lss) {
-        if (paramId < 0 && paramId > 7) return 0;
-        var target = lss.target;
-        var item = FTKR.gameData.item;
-        if(target && item && actor.canEquip(item)) {
-            var newValue = target.param(paramId);
-            var diffvalue = newValue - actor.param(paramId);
-            this.changeTextColor(this.paramchangeTextColor(diffvalue));
-            if (diffvalue > 0) diffvalue = '+' + diffvalue;
-            this.drawText(diffvalue, x, y, width, 'right');
-        }
-    };
-    
-    Window_Base.prototype.drawCssActorEquipAopDiff = function(actor, x, y, width, paramId, lss) {
-        if (!Imported.FTKR_AOP) return 1;
-        if (paramId < 0 && FTKR.AOP.useParamNum > 7) return 1;
-        var target = lss.target;
-        var item = FTKR.gameData.item;
-        if(target && item && actor.canEquip(item)) {
-            var newValue = target.aopParam(paramId);
-            var diffvalue = newValue - actor.aopParam(paramId);
-            this.changeTextColor(this.paramchangeTextColor(diffvalue));
-            if (diffvalue > 0) diffvalue = '+' + diffvalue;
-            this.drawText(diffvalue, x, y, width, 'right');
-        }
-    };
-    
-    Window_Base.prototype.drawCssItemImage = function(actor, dx, dy, width, id) {
-        var item = FTKR.gameData.item;
-        if (!item) return 1;
+    Window_Base.prototype.drawCssItemImage = function(actor, dx, dy, width, id, lss) {
+        var item = FTKR.gameData.item || lss.item;
+        if (!item || !item.cssbgi) return 1;
         id = id || 0;
         var bgi = item.cssbgi[id];
+        if (!bgi) return 1;
         var bitmap = ImageManager.loadPicture(bgi.name);
         if (!bitmap) return 1;
         var sw = bgi.width || bitmap.width;
@@ -514,6 +605,7 @@ if (Imported.FTKR_CSS) (function() {
             var lss = this._lssStatus;
             var w = this.width - this.padding * 2;
             var h = this.height - this.padding * 2;
+            lss.item = this._item;
             this.drawCssActorStatus(0, null, 0, 0, w, h, lss);
         }
     };
@@ -658,6 +750,7 @@ if (Imported.FTKR_CSS) (function() {
         var lineHeight = this.lineHeight() + this.heightSpace();
         var y = lineHeight * this.actorRows() * (index % this.pageSize());
         lss.target = this._tempActor;
+        lss.item = this._item;
         this.drawCssActorStatus(index, actor, 0, y, w, h, lss);
     };
 
@@ -684,7 +777,9 @@ if (Imported.FTKR_CSS) (function() {
             var h = this.height - this.padding * 2;
             if (!this.isEquipItem()) {
                 var lss = this._lssStatus;
-                this.drawCssActorStatus(0, null, 0, 0, w, h, lss);
+                lss.item = this._item;
+                var actor = $gameParty.members()[0];
+                this.drawCssActorStatus(0, actor, 0, 0, w, h, lss);
             }
         }
     };

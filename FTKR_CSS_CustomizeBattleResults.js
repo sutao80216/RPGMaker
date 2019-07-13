@@ -4,8 +4,8 @@
 // プラグインNo : 44
 // 作成者     : フトコロ
 // 作成日     : 2017/06/07
-// 最終更新日 : 2018/08/19
-// バージョン : v2.0.0
+// 最終更新日 : 2018/12/13
+// バージョン : v2.1.4
 //=============================================================================
 
 var Imported = Imported || {};
@@ -14,8 +14,9 @@ Imported.FTKR_CBR = true;
 var FTKR = FTKR || {};
 FTKR.CBR = FTKR.CBR || {};
 
+//=============================================================================
 /*:
- * @plugindesc v2.0.0 カスタム可能な戦闘結果画面を表示する
+ * @plugindesc v2.1.4 カスタム可能な戦闘結果画面を表示する
  * @author フトコロ
  *
  * @param --タイトル設定--
@@ -63,7 +64,7 @@ FTKR.CBR = FTKR.CBR || {};
  * @param partyStatusList
  * @desc 表示するステータスとその位置を設定します。
  * @type struct<status>[]
- * @default ["{\"text\":\"text(入手経験値)\",\"x\":\"0\",\"y\":\"0\",\"width\":\"width/2\"}","{\"text\":\"text(入手ゴールド)\",\"x\":\"0\",\"y\":\"line\",\"width\":\"width/2\"}","{\"text\":\"eval(BattleManager._rewards.exp)\",\"x\":\"width/2\",\"y\":\"0\",\"width\":\"width/2\"}","{\"text\":\"eval(BattleManager._rewards.gold)\",\"x\":\"width/2\",\"y\":\"line\",\"width\":\"width/2\"}"]
+ * @default ["{\"text\":\"text(%1)\",\"value\":\"入手経験値\",\"x\":\"0\",\"y\":\"0\",\"width\":\"390\"}","{\"text\":\"text(%1)\",\"value\":\"入手ゴールド\",\"x\":\"0\",\"y\":\"36\",\"width\":\"390\"}","{\"text\":\"eval(%1)\",\"value\":\"BattleManager._rewards.exp\",\"x\":\"390\",\"y\":\"0\",\"width\":\"390\"}","{\"text\":\"eval(%1)\",\"value\":\"BattleManager._rewards.gold\",\"x\":\"390\",\"y\":\"36\",\"width\":\"390\"}"]
  * 
  * @param Party Status Space In Text
  * @desc Text内で複数表示する場合の間隔を指定します。
@@ -104,6 +105,17 @@ FTKR.CBR = FTKR.CBR || {};
  * @param --戦績コマンド設定--
  * @default
  *
+ * @param Command Cursor Position
+ * @desc カーソルの初期位置を設定します。
+ * @type select
+ * @option ステータス
+ * @value 0
+ * @option アイテム
+ * @value 1
+ * @option 終了
+ * @value 2
+ * @default 0
+ * 
  * @param Enable Select Command
  * @desc 終了コマンド以外を選択できるようにするか設定します。
  * @type select
@@ -169,7 +181,7 @@ FTKR.CBR = FTKR.CBR || {};
  * @param actorStatusList
  * @desc 表示するステータスとその位置を設定します。
  * @type struct<status>[]
- * @default ["{\"text\":\"face(3)\",\"x\":\"0\",\"y\":\"0\",\"width\":\"width/3\"}","{\"text\":\"name\",\"x\":\"width/3\",\"y\":\"0\",\"width\":\"width/3\"}","{\"text\":\"level\",\"x\":\"width*2/3\",\"y\":\"0\",\"width\":\"width/3\"}","{\"text\":\"gauge(0)\",\"x\":\"width/3\",\"y\":\"line\",\"width\":\"width*2/3\"}","{\"text\":\"message\",\"x\":\"width/3\",\"y\":\"line*2\",\"width\":\"width*2/3\"}"]
+ * @default ["{\"text\":\"face(%1)\",\"value\":\"3\",\"x\":\"0\",\"y\":\"0\",\"width\":\"width/3\"}","{\"text\":\"name\",\"x\":\"width/3\",\"y\":\"0\",\"width\":\"width/3\"}","{\"text\":\"level\",\"x\":\"width*2/3\",\"y\":\"0\",\"width\":\"width/3\"}","{\"text\":\"gauge(%1)\",\"value\":\"0\",\"x\":\"width/3\",\"y\":\"line\",\"width\":\"width*2/3\"}","{\"text\":\"message\",\"value\":\"\",\"x\":\"width/3\",\"y\":\"line*2\",\"width\":\"width*2/3\"}"]
  * 
  * @param Actor Status Space In Text
  * @desc Text内で複数表示する場合の間隔を指定します。
@@ -306,8 +318,11 @@ FTKR.CBR = FTKR.CBR || {};
  * 本プラグインを実装することで、戦闘終了時にカスタム可能な戦闘結果画面を
  * 表示します。
  * 
- * マニュアルは以下のサイトをご覧ください。
+ * このプラグインには、FTKR_CustomSimpleActorStatus.js (v3.0.0以降)が必要です。
+ * 
+ * プラグインの使い方は、下のオンラインマニュアルページを見てください。
  * https://github.com/futokoro/RPGMaker/blob/master/FTKR_CSS_CustomizeBattleResults.ja.md
+ * 
  * 
  *-----------------------------------------------------------------------------
  * 設定方法
@@ -315,19 +330,15 @@ FTKR.CBR = FTKR.CBR || {};
  * 1.「プラグインマネージャー(プラグイン管理)」に、本プラグインを追加して
  *    ください。
  * 
- * 2. 本プラグインを動作させるためには、
- *    FTKR_CustomSimpleActorStatus.js(v3.0.0以降)が必要です。
- *    本プラグインは、FTKR_CustomSimpleActorStatus.jsよりも下の位置に
- *    なるように追加してください。
+ * 2. 以下のプラグインと組み合わせる場合は、プラグイン管理の順番に注意してください。
  * 
- * 3. ゲーム画面でレイアウトを変更する場合は、以下のプラグインが必要です。
+ *    FTKR_CustomSimpleActorStatus.js (ステータス表示を変更)
+ *    ↑このプラグインよりも上に登録↑
  * 
- *    GraphicalDesignMode.js
- *    FTKR_CSS_GDM.js
+ *    FTKR_CSS_CustomizeBattleResults.js
  * 
- * 4. FTKR_ExBattleEvent.js と組み合わせると、戦闘終了時イベントのなかで
- *    プラグインコマンドで戦績画面を表示できます。
- *    この場合は、当プラグインをFTKR_ExBattleEvent.jsよりも上にしてください。
+ *    ↓このプラグインよりも下に登録↓
+ *    FTKR_ExBattleEvent.js
  * 
  * 
  *-----------------------------------------------------------------------------
@@ -346,6 +357,20 @@ FTKR.CBR = FTKR.CBR || {};
  *-----------------------------------------------------------------------------
  * 変更来歴
  *-----------------------------------------------------------------------------
+ * 
+ * v2.1.4 - 2018/12/13 : プラグインパラメータstatusListの初期値変更
+ * 
+ * v2.1.3 - 2018/09/29 : 機能追加
+ *    1. 戦績コマンドのカーソル初期値を設定する機能を追加。
+ * 
+ * v2.1.2 - 2018/09/29 : 機能追加
+ *    1. プラグインパラメータのリストで選択できる項目を追加。
+ * 
+ * v2.1.1 - 2018/09/28 : 不具合修正
+ *    1. 経験獲得率の値によっては、獲得経験値が正しく計算されない不具合を修正。
+ * 
+ * v2.1.0 - 2018/08/30 : 機能追加
+ *    1. プラグインパラメータで表示するステータスをリストで選択できる機能を追加。
  * 
  * v2.0.0 - 2018/08/19 : FTKR_CustomSimpleActorStatus v3.0.0 対応版に変更
  * 
@@ -398,9 +423,103 @@ FTKR.CBR = FTKR.CBR || {};
 //=============================================================================
 /*~struct~status:
  * @param text
- * @desc 表示するステータス
+ * @desc 表示するステータスを選択
+ * リストにない場合は、直接テキストで記述
  * @default 
+ * @type select
+ * @option 名前
+ * @value name
+ * @option 二つ名
+ * @value nickname
+ * @option 職業
+ * @value class
+ * @option レベル
+ * @value level
+ * @option HP
+ * @value hp
+ * @option MP
+ * @value mp
+ * @option TP
+ * @value tp
+ * @option 顔画像
+ * @value face
+ * @option 顔画像(サイズ指定)
+ * @value face(%1)
+ * @option 歩行キャラ画像
+ * @value chara
+ * @option SV戦闘キャラ画像
+ * @value sv
+ * @option ステート(横)
+ * @value state
+ * @option ステート(縦)
+ * @value state2(%1)
+ * @option プロフィール
+ * @value profile
+ * @option 通常能力値
+ * @value param(%1)
+ * @option 通常能力値(素)
+ * @value pbase(%1)
+ * @option 通常能力値(増加分)
+ * @value pdiff(%1)
+ * @option 装備
+ * @value equip(%1)
+ * @option 装備パラメータ
+ * @value eparam(%1)
+ * @option カスタムパラメータ
+ * @value custom(%1)
+ * @option カスタムゲージ
+ * @value gauge(%1)
+ * @option アクター別カスタムゲージ
+ * @value agauge(%1)
+ * @option クラス別カスタムゲージ
+ * @value cgauge(%1)
+ * @option カスタム画像
+ * @value image
+ * @option カスタム画像(登録ID)
+ * @value image(%1)
+ * @option メッセージ
+ * @value message
+ * @option テキスト
+ * @value text(%1)
+ * @option JS計算式(数値表示)
+ * @value eval(%1)
+ * @option JS計算式(文字列表示)
+ * @value streval(%1)
+ * @option 横線
+ * @value line
+ * @option AOP能力値
+ * @value aop(%1)
+ * @option AOP能力値(素)
+ * @value aopbase(%1)
+ * @option AOP能力値(増加分)
+ * @value aopdiff(%1)
+ * @option AOP装備パラメータ
+ * @value eaop(%1)
+ * @option アイテム名
+ * @value iname
+ * @option アイテムアイコン
+ * @value iicon
+ * @option アイテム説明
+ * @value idesc
+ * @option アイテムタイプ
+ * @value itype
+ * @option アイテム装備タイプ
+ * @value ietype
+ * @option アイテム範囲
+ * @value iscope
+ * @option アイテム属性
+ * @value ielement
+ * @option アイテム設定詳細
+ * @value iparam(%1)
+ * @option アイテムカスタム画像
+ * @value iimage(%1)
+ * @option マップ名
+ * @value mapname
  *
+ * @param value
+ * @desc code(%1)の形式で設定するステータスの%1の内容を入力
+ * @default 
+ * 
  * @param x
  * @desc 表示するX座標
  * @default 0
@@ -463,6 +582,7 @@ if (Imported.FTKR_CSS) (function() {
             spaceIn     :Number(parameters['Party Status Space In Text'] || 0),
         },
         command:{
+            cursorPosi  :Number(paramParse(parameters['Command Cursor Position']) || 0),
             status      :String(parameters['Command Display Status'] || ''),
             item        :String(parameters['Command Display Item'] || ''),
             finish      :String(parameters['Command Finish'] || ''),
@@ -651,6 +771,10 @@ if (Imported.FTKR_CSS) (function() {
     BattleManager.initMembers = function() {
         _CBR_BattleManager_initMembers.call(this);
         this._showBattleResultOk = false;
+        this._cbrGainExps = [];
+        this._cbrExps = [];
+        this._cbrModExps = [];
+        this._cbrSplitExps = [];
     }
 
     //書き換え
@@ -669,17 +793,55 @@ if (Imported.FTKR_CSS) (function() {
     //書き換え
     BattleManager.gainExp = function() {
         this._cbrGainExp = this._rewards.exp;
-        SceneManager._scene.setGainExp(this._cbrGainExp);
+        this._cbrCount = Scene_Battle.CBR_COUNT_MAX;
+        var splitNum = Scene_Battle.CBR_SPLIT_NUMBER;
+        $gameParty.allMembers().forEach(function(actor, i) {
+            this._cbrExps[i] = 0;
+            var gainExp = Math.round(this._cbrGainExp * actor.finalExpRate());
+            this._cbrGainExps[i] = gainExp
+            this._cbrSplitExps[i] = Math.floor(gainExp / splitNum);
+            this._cbrModExps[i] = gainExp % splitNum;
+        },this);
         this._rewards.exp = 0;
     };
 
     var _CBR_BattleManager_updateEvent = BattleManager.updateEvent;
     BattleManager.updateEvent = function() {
         if (BattleManager.isCbrBattleResult()) {
-            SceneManager._scene.updateExp(this._cbrGainExp);
+            this.updateExp(this._cbrGainExp);
             return true;
         }
         return _CBR_BattleManager_updateEvent.call(this);
+    };
+
+    BattleManager.updateExp = function(gainExp) {
+        if (!gainExp) return;
+        if (this._cbrCount < Scene_Battle.CBR_COUNT_MAX) {
+            this._cbrCount += 1;
+        } else {
+            this._cbrCount = 0;
+            $gameParty.allMembers().forEach(function(actor, i) {
+                if (this._cbrExps[i] >= this._cbrGainExps[i]) return;
+                var modexp = this._cbrModExps[i] ? 1 : 0;
+                var exp = this._cbrSplitExps[i] + modexp;
+                if (modexp) this._cbrModExps[i] -= 1;
+                this._cbrExps[i] += exp;
+                actor.gainExp(exp);
+            },this);
+            SceneManager._scene._battleResultActorWindow.refresh();
+        }
+    };
+
+    BattleManager.cbrFinish = function() {
+        this._showBattleResultOk = false;
+        $gameParty.allMembers().forEach(function(actor, i) {
+            var difExp = this._cbrGainExps[i] - this._cbrExps[i];
+            if (difExp) {
+                actor.gainExp(difExp);
+            }
+        },this);
+        this._cbrGainExp = 0;
+        this._cbrGainExps.length = 0;
     };
 
     BattleManager.showCBR = function() {
@@ -705,16 +867,23 @@ if (Imported.FTKR_CSS) (function() {
     };
 
     //=============================================================================
-    // 戦闘中のレベルアップメッセージを無効
     //Game_Actor
     //=============================================================================
 
+    // 戦闘中のレベルアップメッセージを無効
+    //書き換え
     var _CBR_Game_Actor_displayLevelUp = Game_Actor.prototype.displayLevelUp;
     Game_Actor.prototype.displayLevelUp = function(newSkills) {
         if ($gameParty.inBattle()) return;
         _CBR_Game_Actor_displayLevelUp.call(this, newSkills);
     };
 
+    //書き換え
+    Game_Actor.prototype.gainExp = function(exp) {
+        var newExp = this.currentExp() + Math.round(exp);
+        this.changeExp(newExp, this.shouldDisplayLevelUp());
+    };
+    
     //=============================================================================
     // 戦績ウィンドウの追加
     //Scene_Battle
@@ -801,33 +970,6 @@ if (Imported.FTKR_CSS) (function() {
         this.addWindow(this._battleResultItemWindow);
     };
 
-    Scene_Battle.prototype.setGainExp = function(gainExp) {
-        this._cbrExp = 0;
-        this._cbrGainExp = gainExp;
-        var splitNum = Scene_Battle.CBR_SPLIT_NUMBER;
-        this._cbrSplitExp = Math.floor(gainExp / splitNum);
-        this._cbrModExp = gainExp % splitNum;
-        this._cbrCount = Scene_Battle.CBR_COUNT_MAX;
-    };
-
-    Scene_Battle.prototype.updateExp = function(gainExp) {
-        if (!gainExp) return;
-        if (this._cbrExp >= gainExp) return;
-        if (this._cbrCount < Scene_Battle.CBR_COUNT_MAX) {
-            this._cbrCount += 1;
-        } else {
-            this._cbrCount = 0;
-            var modexp = this._cbrModExp ? 1 : 0;
-            var exp = this._cbrSplitExp + modexp;
-            if (modexp) this._cbrModExp -= 1;
-            this._cbrExp += exp;
-            $gameParty.allMembers().forEach(function(actor) {
-                actor.gainExp(exp);
-            },this);
-            this._battleResultActorWindow.refresh();
-        }
-    };
-
     Scene_Battle.prototype.showBattleResult = function(rewards) {
         this._statusWindow.hide();
         this._battleResultTitleWindow.show();
@@ -836,6 +978,7 @@ if (Imported.FTKR_CSS) (function() {
         this._battleResultCommandWindow.setDropItem(rewards.items);
         this._battleResultCommandWindow.show();
         this._battleResultCommandWindow.activate();
+        this._battleResultCommandWindow.select(FTKR.CBR.command.cursorPosi);
         this._battleResultActorWindow.show();
         this._battleResultActorWindow.refresh();
         this._battleResultItemWindow.setDropItem(rewards.items);
@@ -861,13 +1004,7 @@ if (Imported.FTKR_CSS) (function() {
     
     Scene_Battle.prototype.cbrFinish = function() {
         this.hideBattleResult();
-        BattleManager._showBattleResultOk = false;
-        var difExp = this._cbrGainExp - this._cbrExp;
-        if (difExp) {
-            $gameParty.allMembers().forEach(function(actor) {
-                actor.gainExp(difExp);
-            },this);
-        }
+        BattleManager.cbrFinish();
     };
 
     Scene_Battle.prototype.onCBRActorCancel = function() {

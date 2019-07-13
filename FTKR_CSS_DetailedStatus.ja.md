@@ -43,112 +43,14 @@ FTKR_CSS_DetailedStatus.js
 
 ## レイアウト設定
 
-## 表示エリアサイズの設定
-
-### ステータス画面の表示エリア
-
-ステータス画面は、下の図の(1)～(4)の4つの表示エリアで構成しています。
-各表示エリア内の構成は、レイアウトの基本構成と同じです。
-
-![画像](image/FTKR_CustomSimpleActorStatus/n03_006.png)
-
-### 表示エリアサイズの設定
-
-表示エリアのサイズ(行数)は、プラグインパラメータ`DS Lines Number`で設定します。４つの表示エリアの行数を、カンマ(,)で区切って入力してください。
-
-下の図の設定の場合は、表示エリアの行数は以下になります。
-* 表示エリア(1)の高さ - 1 行
-* 表示エリア(2)の高さ - 4 行
-* 表示エリア(3)の高さ - 6 行
-* 表示エリア(4)の高さ - 2 行
-
-なお、デフォルトの画面サイズの場合、表示可能な行数は最大で16行です。
-ラインも1本 1行と数えます。
-
-![画像](image/FTKR_CustomSimpleActorStatus/n03_002.png)
-
-[目次に戻る](#目次)
-
-## 表示エリア間のラインの設定
-
-表示エリア間のラインの色、太さ、透明度を設定できます。
-
-![画像](image/FTKR_CustomSimpleActorStatus/n03_007.png)
-
-以下のプラグインパラメータで設定します。
-
-`DS Horz Line Color`
-
-ラインの色番号を指定します。<br>
--1 を入力した場合は非表示になり、表示エリアが上にずれます。
-
-`DS Horz Line Thick`
-
-ラインの太さを指定します。<br>
-0 を入力した場合は非表示になりますが、表示エリアはずれません。
-
-`DS Horz Line Opacity`
-
-ラインの色の透明度を指定します。<br>
-0 で透明、255で不透明になります。
-
-![画像](image/FTKR_CustomSimpleActorStatus/n03_003.png)
-
-[目次に戻る](#目次)
-
-## 表示エリアの設定
-
-表示エリアは、以下の4つのプラグインパラメータで設定します。
-
-`DS Line* Status`<br>
-`DS Space*`<br>
-`DS Space In Text*`<br>
-`DS Width Rate*`<br>
-
-プラグインパラメータの*印の番号と表示エリアの番号は以下の組み合わせです。
-* *印の 0番 - 表示エリア(1)の設定
-* *印の 1番 - 表示エリア(2)の設定
-* *印の 2番 - 表示エリア(3)の設定
-* *印の 3番 - 表示エリア(4)の設定
-
-![画像](image/FTKR_CustomSimpleActorStatus/n03_004.png)
-
-### ステータス画面の描画エリアの表示設定
-
-プラグインパラメータ`DS Line* Status`で、描画エリアの表示内容を設定します。
-
-以下のようにセミコロン(;)を使用して、各描画エリアのコードを区切ります。
-```
-描画エリア(1);描画エリア(2);描画エリア(3)
-```
-各描画エリアのコード入力は、`Actor Status Text*`の設定と同じです。
-
-#### 入力例
-表示エリア(2)のデフォルト設定
-```
-face;level,state,hp,mp;custom(0),custom(1),custom(2),custom(3)
-```
-上記の入力の場合、各描画エリアの表示内容は以下の通りです。
-* 描画エリア(1) - 顔画像 を表示
-* 描画エリア(2) - レベル、ステートアイコン、HPゲージ、MPゲージ を縦に表示
-* 描画エリア(3) - カスタムパラメータの0～3 を縦に表示
+レイアウトの設定方法は[こちら](FTKR_CustomSimpleActorStatus_1.ja.md)を参考にしてください。
 
 ### ステータス画面の表示エリアのその他の設定
-
-`DS Space*`
-
-空白エリアのサイズを設定します。
-`Actor Status Space`の設定と同じです。
 
 `DS Space In Text*`
 
 角括弧を使ったときの表示間隔を設定します。
 `Actor Status Space In Text`の設定と同じです。
-
-`DS Width Rate*`
-
-描画エリアのサイズの比率を設定します。
-`Actor Status Width Rate`の設定と同じです。
 
 [目次に戻る](#目次)
 
@@ -162,12 +64,6 @@ face;level,state,hp,mp;custom(0),custom(1),custom(2),custom(3)
 ステータス画面のステータスウィンドウ変更機能を使うか指定します。
 * 0 - 無効(デフォルト)
 * 1 - 有効
-
-### 縦の行数
-`Number Visible Rows`
-
-ステータスウィンドウの縦の行数を変更します。
-デフォルトは16行です。
 
 ### フォントサイズ
 `Font Size`
@@ -227,7 +123,12 @@ face;level,state,hp,mp;custom(0),custom(1),custom(2),custom(3)
 
 | バージョン | 公開日 | 更新内容 |
 | --- | --- | --- |
-| [ver2.0.0](FTKR_CSS_DetailedStatus.js) | 2018/08/19 | FTKR_CustomSimpleActorStatus.js の v3.0.0に対応 |
+| [ver2.1.4](FTKR_CSS_DetailedStatus.js) | 2018/12/13 | プラグインパラメータ初期値変更 |
+| ver2.1.3 | 2018/10/20 | dsWeaponMasteryプラグインの熟練度表示に対応 |
+| ver2.1.2 | 2018/09/29 | プラグインパラメータのリストで選択できる項目を追加 |
+| ver2.1.1 | 2018/09/12 | 不要なプラグインパラメータ を削除 |
+| ver2.1.0 | 2018/08/30 | FTKR_CustomSimpleActorStatus.js の v3.1.0に対応<br>ウィンドウの表示内容を自動更新する機能を追加 |
+| ver2.0.0 | 2018/08/19 | FTKR_CustomSimpleActorStatus.js の v3.0.0に対応 |
 | [ver1.1.0](/archive/FTKR_CSS_DetailedStatus_1.1.0.js) | 2017/11/18 | FTKR_CustomSimpleActorStatus.js の v2.6.0に対応 |
 | ver1.0.2 | 2017/05/13 | ウィンドウ設定変更機能が正常に機能していない不具合を修正 |
 | ver1.0.1 | 2017/05/08 | ウィンドウ設定変更機能を追加 |
